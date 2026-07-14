@@ -25,9 +25,23 @@ converter = DocumentConverter(
     },
 )
 
-base = Path("./init_load")
-# file = base / f"{fileName}"
+fileStagePath = Path("./pipeline/staging")
 
 
-def loadFile():
-    pass
+def loadFile(fileName: str):
+    filePath = fileStagePath / f"{fileName}"
+
+    # with open(filePath, "rb") as file:
+    #     content = file.read()
+    #     print(content)
+
+    # start_time = time.time()
+    conv_result = converter.convert(source=filePath)
+    # end_time = time.time() - start_time
+
+    print(conv_result.status)
+
+    # doc_filename = conv_result.input.file.stem
+
+    # with open(f"{doc_filename}.md", "w", encoding="utf-8") as fp:
+    #     fp.write(conv_result.document.export_to_markdown())

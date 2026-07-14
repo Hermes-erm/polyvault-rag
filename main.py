@@ -7,6 +7,8 @@ from docling.document_converter import DocumentConverter, MarkdownFormatOption
 from docling.datamodel.base_models import InputFormat
 from docling.datamodel.pipeline_options import PipelineOptions
 
+from extract import loadFile
+
 app = FastAPI()
 
 converter = DocumentConverter(
@@ -28,18 +30,6 @@ converter = DocumentConverter(
     },
 )
 
-# filePath: str = "./multimodal/drylab.pdf"
-
-# start_time = time.time()
-# conv_result = converter.convert(source=filePath)
-# end_time = time.time() - start_time
-
-# print(conv_result.version, conv_result.status)
-
-# doc_filename = conv_result.input.file.stem
-
-# with open(f"{doc_filename}.md", "w", encoding="utf-8") as fp:
-#     fp.write(conv_result.document.export_to_markdown())
 
 fileStagePath = Path("./pipeline/staging")
 
@@ -65,4 +55,6 @@ async def import_file(
         content = await file.read()
         fileDest.write(content)
 
-    return {"data": file}
+    resp = loadFile(file.filename)
+
+    return resp
