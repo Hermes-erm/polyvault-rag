@@ -26,6 +26,7 @@ converter = DocumentConverter(
 )
 
 fileStagePath = Path("./pipeline/staging")
+sourceFilePath = Path("./pipeline/processed")
 
 
 def loadFile(fileName: str):
@@ -40,8 +41,15 @@ def loadFile(fileName: str):
     # end_time = time.time() - start_time
 
     print(conv_result.status)
+    doc_filename = conv_result.input.file.stem
 
-    # doc_filename = conv_result.input.file.stem
+    with open(sourceFilePath / f"{doc_filename}.md", "w", encoding="utf-8") as fp:
+        fp.write(conv_result.document.export_to_markdown())
 
-    # with open(f"{doc_filename}.md", "w", encoding="utf-8") as fp:
-    #     fp.write(conv_result.document.export_to_markdown())
+    if filePath.exists():
+        filePath.unlink()
+        print("File deleted successfully.")
+    else:
+        print("The file does not exist.")
+
+    return conv_result.status
