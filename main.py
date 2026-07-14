@@ -2,33 +2,10 @@ from fastapi import FastAPI, File, UploadFile, HTTPException
 from pathlib import Path
 from enum import Enum
 
-# from docling.document_extractor import DocumentExtractor
-from docling.document_converter import DocumentConverter, MarkdownFormatOption
-from docling.datamodel.base_models import InputFormat
-from docling.datamodel.pipeline_options import PipelineOptions
 
 from extract import loadFile
 
 app = FastAPI()
-
-converter = DocumentConverter(
-    allowed_formats=[
-        InputFormat.PDF,
-        InputFormat.DOCX,
-        InputFormat.JSON_DOCLING,  # look at later
-        InputFormat.IMAGE,
-        InputFormat.MD,
-        InputFormat.CSV,
-        InputFormat.XLSX,
-    ],
-    format_options={
-        InputFormat: MarkdownFormatOption(
-            pipeline_options=PipelineOptions(  # artifacts_path=""
-                document_timeout=50,
-            )
-        ),
-    },
-)
 
 
 fileStagePath = Path("./pipeline/staging")
