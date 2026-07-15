@@ -8,6 +8,8 @@ from docling.document_converter import DocumentConverter, MarkdownFormatOption
 from docling.datamodel.base_models import InputFormat
 from docling.datamodel.pipeline_options import PipelineOptions
 
+import chromadb
+
 converter = DocumentConverter(
     allowed_formats=[
         InputFormat.PDF,
@@ -28,6 +30,8 @@ converter = DocumentConverter(
 )
 
 segmenter = pysbd.Segmenter(language="en", clean=True)
+
+vectorStore = chromadb.PersistentClient(path="./chromadb")
 
 fileStagePath = Path("./pipeline/staging")
 sourceFilePath = Path("./pipeline/processed")
@@ -56,12 +60,12 @@ def loadFile(fileName: str):
     else:
         print("The file does not exist.")
 
-    chunkDoc(doc_filename)
+    segmentizeDoc(doc_filename)
 
     return conv_result.status
 
 
-def chunkDoc(fileName: str):
+def segmentizeDoc(fileName: str):
     content = ""
     with open(sourceFilePath / f"{fileName}.md", "r") as md:
         content = md.read()

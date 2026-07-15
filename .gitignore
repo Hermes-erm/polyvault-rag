@@ -220,3 +220,4 @@ pyproject.toml
 multimodal/
 
 pipeline/
+chromadb/
