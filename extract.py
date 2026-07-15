@@ -1,6 +1,7 @@
 import time
 from pathlib import Path
 import pysbd
+import numpy as np
 
 # from docling.document_extractor import DocumentExtractor
 from docling.document_converter import DocumentConverter, MarkdownFormatOption
@@ -71,5 +72,15 @@ def chunkDoc(fileName: str):
         print(sentence)
 
 
-def embedChunks(chunks: list[str]):
+def chunkBySimilarity(chunks: list[str]):
     pass
+
+
+def cosine_sim(a: np.array, b: np.array):
+    dot_prod = np.dot(a, b)  # a.b
+    norm_vec = np.linalg.norm(a) * np.linalg.norm(b)  # |a| * |b|
+
+    if norm_vec == 0.0:
+        return 0.0
+
+    return dot_prod / norm_vec  # a.b / |a||b|
