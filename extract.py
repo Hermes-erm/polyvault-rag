@@ -93,7 +93,7 @@ def loadFile(fileName: str):
 
 
 def segmentizeDoc(fileName: str):
-    print(f"Segmentizing file {fileName}..")
+    print(f"Segmentizing file {fileName}.md ..")
 
     content = ""
     with open(sourceFilePath / f"{fileName}.md", "r") as md:
@@ -115,6 +115,8 @@ def cosine_sim(a: np.array, b: np.array):
 
 
 def chunkBySimilarity(sentences: list[str], window: int = 2, percentile: float = 85):
+    print("Chunking..")
+
     n = len(sentences)
 
     if window >= n:
