@@ -69,10 +69,6 @@ sourceFilePath = Path("./pipeline/processed")
 def loadFile(fileName: str):
     filePath = fileStagePath / f"{fileName}"
 
-    # with open(filePath, "rb") as file:
-    #     content = file.read()
-    #     print(content)
-
     # start_time = time.time()
     conv_result = converter.convert(source=filePath)
     # end_time = time.time() - start_time
@@ -101,14 +97,7 @@ def segmentizeDoc(fileName: str):
 
     sentence_blocks = segmenter.segment(content)
 
-    # for sentence in sentence_blocks:
-    #     print(sentence)
-
-    chunkBySimilarity(sentence_blocks)
-
-
-def chunkBySimilarity(sentences: list[str]):
-    pass
+    chunkBySimilarity(np.array(sentence_blocks))
 
 
 def cosine_sim(a: np.array, b: np.array):
@@ -119,3 +108,39 @@ def cosine_sim(a: np.array, b: np.array):
         return 0.0
 
     return dot_prod / norm_vec  # a.b / |a||b|
+
+
+def chunkBySimilarity(sentences: list[str]):
+    n = len(sentences)
+    window = 2
+    cosines = []
+
+    if window >= n:
+        raise ValueError(
+            f"Window size ({window}) must be smaller than chunk count ({n})"
+        )
+
+    for i in range(n - window):  # (win - 1)
+        window_sentences = sentences[i : i + window]  # <class 'numpy.ndarray'>
+        embeddings = embedder(window_sentences)  # <class 'list'> -> np.asarray()
+        mean_embedding = np.mean(embeddings, axis=0)
+
+        left_embedding = mean_embedding
+
+        # <----------------------------------->
+
+        i = i + 1  # TODO: MEMOIZE
+        window_sentences = sentences[i : (i + window)]
+        embeddings = embedder(window_sentences)
+        mean_embedding = np.mean(embeddings, axis=0)
+
+        right_embedding = mean_embedding
+
+        cosine = cosine_sim(left_embedding, right_embedding)
+        distance = 1 - cosine
+        cosines.append(distance)
+
+    print(np.array(cosines).reshape(-1, 1))
+
+
+segmentizeDoc("prideprejudice")
