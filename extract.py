@@ -9,6 +9,8 @@ from docling.datamodel.base_models import InputFormat
 from docling.datamodel.pipeline_options import PipelineOptions
 
 import chromadb
+from chromadb.errors import NotFoundError
+from chromadb.utils.embedding_functions import SentenceTransformerEmbeddingFunction
 
 converter = DocumentConverter(
     allowed_formats=[
@@ -31,7 +33,36 @@ converter = DocumentConverter(
 
 segmenter = pysbd.Segmenter(language="en", clean=True)
 
+embedding_fn = SentenceTransformerEmbeddingFunction(
+    model_name="all-MiniLM-L6-v2", normalize_embeddings=True
+)
+
+
+def getVectorCollection():
+    generic_collection = None
+
+    try:
+        generic_collection = vectorStore.get_collection(name=collection_name)
+    except NotFoundError:
+        generic_collection = vectorStore.create_collection(
+            name=collection_name,
+            metadata=collection_metadata,
+            embedding_function=embedding_fn,
+        )
+
+    return generic_collection
+
+
+collection_name = "multimodal"
+collection_metadata = {
+    "name": collection_name,
+    "docType": "Multimodal",
+    "description": "A generic collection for multimodal",
+}
+
 vectorStore = chromadb.PersistentClient(path="./chromadb")
+generic_collection = getVectorCollection()
+# vectorStore.reset()
 
 fileStagePath = Path("./pipeline/staging")
 sourceFilePath = Path("./pipeline/processed")
@@ -72,11 +103,13 @@ def segmentizeDoc(fileName: str):
 
     sentence_blocks = segmenter.segment(content)
 
-    for sentence in sentence_blocks:
-        print(sentence)
+    # for sentence in sentence_blocks:
+    #     print(sentence)
+
+    chunkBySimilarity(sentence_blocks)
 
 
-def chunkBySimilarity(chunks: list[str]):
+def chunkBySimilarity(sentences: list[str]):
     pass
 
 
