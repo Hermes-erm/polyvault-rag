@@ -8,8 +8,7 @@ from docling.document_converter import DocumentConverter, MarkdownFormatOption
 from docling.datamodel.base_models import InputFormat
 from docling.datamodel.pipeline_options import PipelineOptions
 
-import chromadb
-from chromadb.errors import NotFoundError
+
 from chromadb.utils.embedding_functions import ONNXMiniLM_L6_V2
 
 converter = DocumentConverter(
@@ -34,33 +33,6 @@ converter = DocumentConverter(
 segmenter = pysbd.Segmenter(language="en", clean=True)
 
 embedder = ONNXMiniLM_L6_V2()  # all-MiniLM-L6-v2
-# embeddings = embedder([student_info, club_info, university_info])
-
-
-def getVectorCollection():
-    generic_collection = None
-
-    try:
-        generic_collection = vectorStore.get_collection(name=collection_name)
-    except NotFoundError:
-        generic_collection = vectorStore.create_collection(
-            name=collection_name,
-            metadata=collection_metadata,
-            # embedding_function=ONNXMiniLM_L6_V2(),
-        )
-
-    return generic_collection
-
-
-collection_name = "multimodal"
-collection_metadata = {
-    "name": collection_name,
-    "docType": "Multimodal",
-    "description": "A generic collection for multimodal",
-}
-
-vectorStore = chromadb.PersistentClient(path="./chromadb")
-generic_collection = getVectorCollection()
 
 fileStagePath = Path("./pipeline/staging")
 sourceFilePath = Path("./pipeline/processed")
