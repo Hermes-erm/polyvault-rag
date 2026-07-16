@@ -114,37 +114,43 @@ def cosine_sim(a: np.array, b: np.array):
     return dot_prod / norm_vec  # a.b / |a||b|
 
 
-def chunkBySimilarity(sentences: list[str]):
+def chunkBySimilarity(sentences: list[str], window: int = 2, percentile: float = 85):
     n = len(sentences)
-    window = 2
-    cosines = []
 
     if window >= n:
         raise ValueError(
             f"Window size ({window}) must be smaller than chunk count ({n})"
         )
 
+    embeddings = embedder(sentences)
+    distances = []
+
     for i in range(n - window):  # (win - 1)
-        window_sentences = sentences[i : i + window]  # <class 'numpy.ndarray'>
-        embeddings = embedder(window_sentences)  # <class 'list'> -> np.asarray()
-        mean_embedding = np.mean(embeddings, axis=0)
-
-        left_embedding = mean_embedding
-
-        # <----------------------------------->
-
-        i = i + 1  # TODO: MEMOIZE
-        window_sentences = sentences[i : (i + window)]
-        embeddings = embedder(window_sentences)
-        mean_embedding = np.mean(embeddings, axis=0)
-
-        right_embedding = mean_embedding
+        left_embedding = np.mean(embeddings[i : i + window], axis=0)
+        right_embedding = np.mean(  # TODO: MEMOIZE
+            embeddings[i + 1 : i + window + 1], axis=0
+        )
 
         cosine = cosine_sim(left_embedding, right_embedding)
-        distance = 1 - cosine
-        cosines.append(distance)
+        distances.append(1 - cosine)
 
-    print(np.array(cosines).reshape(-1, 1))
+    threshold = np.percentile(distances, percentile)
+    breakpoints = [
+        i for i, dist in enumerate(distances) if dist > threshold
+    ]  # Break at the peak
+
+    # print(np.array(distances).reshape(-1, 1))
+
+    chunks, start = [], 0
+    for ind in breakpoints:
+        content = " ".join(sentences[start : ind + 1])
+        start = ind + 1
+        chunks.append(content)
+
+    rest_chunks = " ".join(sentences[start:])
+    chunks.append(rest_chunks)
+
+    return chunks
 
 
 segmentizeDoc("prideprejudice")
