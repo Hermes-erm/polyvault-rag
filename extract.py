@@ -67,6 +67,8 @@ sourceFilePath = Path("./pipeline/processed")
 
 
 def loadFile(fileName: str):
+    print("Staging file..")
+
     filePath = fileStagePath / f"{fileName}"
 
     # start_time = time.time()
@@ -81,7 +83,7 @@ def loadFile(fileName: str):
 
     if filePath.exists():
         filePath.unlink()
-        print("File deleted successfully.")
+        print("File modified successfully.")
     else:
         print("The file does not exist.")
 
@@ -91,6 +93,8 @@ def loadFile(fileName: str):
 
 
 def segmentizeDoc(fileName: str):
+    print(f"Segmentizing file {fileName}..")
+
     content = ""
     with open(sourceFilePath / f"{fileName}.md", "r") as md:
         content = md.read()

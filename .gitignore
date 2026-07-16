@@ -216,7 +216,7 @@ __marimo__/
 
 # Streamlit
 .streamlit/secrets.toml
-pyproject.toml
+# pyproject.toml
 multimodal/
 
 pipeline/
