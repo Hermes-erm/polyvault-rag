@@ -86,7 +86,7 @@ def cosine_sim(a: np.array, b: np.array):
     return dot_prod / norm_vec  # a.b / |a||b|
 
 
-def chunkBySimilarity(sentences: list[str], window: int = 2, percentile: float = 85):
+def chunkBySimilarity(sentences: list[str], window: int = 2, percentile: float = 80):
     print("Chunking..")
 
     n = len(sentences)
@@ -109,8 +109,9 @@ def chunkBySimilarity(sentences: list[str], window: int = 2, percentile: float =
         distances.append(1 - cosine)
 
     threshold = np.percentile(distances, percentile)
+    offset = window - 1
     breakpoints = [
-        i for i, dist in enumerate(distances) if dist > threshold
+        i + offset for i, d in enumerate(distances) if d >= threshold
     ]  # Break at the peak
 
     # print(np.array(distances).reshape(-1, 1))
