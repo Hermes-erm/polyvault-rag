@@ -8,6 +8,7 @@ from typing import Optional
 from datetime import datetime, timezone
 from pydantic import BaseModel
 from transformers import AutoTokenizer
+from extract import embedder
 
 
 def getVectorCollection():
@@ -89,7 +90,20 @@ def storeChunks(chunks: list[str], embedder: ONNXMiniLM_L6_V2, filePath: Path):
     print(*generic_collection.get()["metadatas"])
 
 
+def queryData(text: str):
+    embedding = embedder([text])
+    data = generic_collection.query(
+        query_embeddings=embedding,
+        n_results=3,
+        include=["documents"],  # "metadatas", "distances"
+    )
+    for doc in data["documents"]:
+        print(doc)
+        print("----------------")
+
+
 if __name__ == "__main__":
     # vectorStore.reset()
     # print("Vector Collections: ", vectorStore.list_collections())
-    pass
+    query = input("Enter your query: ")
+    queryData(query)

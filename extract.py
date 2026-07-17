@@ -2,7 +2,8 @@ import time
 import numpy as np
 from pathlib import Path
 from blingfire import text_to_sentences
-from store import storeChunks
+
+# from store import storeChunks
 
 # from docling.document_extractor import DocumentExtractor
 from docling.document_converter import DocumentConverter, MarkdownFormatOption
@@ -73,7 +74,7 @@ def segmentizeDoc(fileName: str, originalFile: Path):
     sentence_blocks = text_to_sentences(content).splitlines()
 
     chunks = chunkBySimilarity(np.array(sentence_blocks))
-    storeChunks(chunks, embedder, originalFile)
+    # storeChunks(chunks, embedder, originalFile)
 
 
 def cosine_sim(a: np.array, b: np.array):
@@ -132,4 +133,4 @@ def chunkBySimilarity(sentences: list[str], window: int = 2, percentile: float =
     return chunks
 
 
-segmentizeDoc("drylab", Path("pipeline/staging/drylab.pdf"))
+# segmentizeDoc("drylab", Path("pipeline/staging/drylab.pdf"))
