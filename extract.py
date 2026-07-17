@@ -2,6 +2,7 @@ import time
 import numpy as np
 from pathlib import Path
 from blingfire import text_to_sentences
+from store import storeChunks
 
 # from docling.document_extractor import DocumentExtractor
 from docling.document_converter import DocumentConverter, MarkdownFormatOption
@@ -51,18 +52,18 @@ def loadFile(fileName: str):
     with open(sourceFilePath / f"{doc_filename}.md", "w", encoding="utf-8") as fp:
         fp.write(conv_result.document.export_to_markdown(image_placeholder=""))
 
-    if filePath.exists():
-        filePath.unlink()
-        print("File modified successfully.")
-    else:
-        print("The file does not exist.")
+    # if filePath.exists(): # NOTE: later use
+    #     filePath.unlink()
+    #     print("File modified successfully.")
+    # else:
+    #     print("The file does not exist.")
 
-    segmentizeDoc(doc_filename)
+    segmentizeDoc(doc_filename, filePath)
 
     return conv_result.status
 
 
-def segmentizeDoc(fileName: str):
+def segmentizeDoc(fileName: str, originalFile: Path):
     print(f"Segmentizing file {fileName}.md ..")
 
     content = ""
@@ -71,7 +72,8 @@ def segmentizeDoc(fileName: str):
 
     sentence_blocks = text_to_sentences(content).splitlines()
 
-    chunkBySimilarity(np.array(sentence_blocks))
+    chunks = chunkBySimilarity(np.array(sentence_blocks))
+    storeChunks(chunks, embedder, originalFile)
 
 
 def cosine_sim(a: np.array, b: np.array):
@@ -130,4 +132,4 @@ def chunkBySimilarity(sentences: list[str], window: int = 2, percentile: float =
     return chunks
 
 
-segmentizeDoc("prideprejudice")
+segmentizeDoc("drylab", Path("pipeline/staging/drylab.pdf"))
