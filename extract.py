@@ -1,13 +1,12 @@
 import time
-from pathlib import Path
-import pysbd
 import numpy as np
+from pathlib import Path
+from blingfire import text_to_sentences
 
 # from docling.document_extractor import DocumentExtractor
 from docling.document_converter import DocumentConverter, MarkdownFormatOption
 from docling.datamodel.base_models import InputFormat
 from docling.datamodel.pipeline_options import PipelineOptions
-
 
 from chromadb.utils.embedding_functions import ONNXMiniLM_L6_V2
 
@@ -30,7 +29,6 @@ converter = DocumentConverter(
     },
 )
 
-segmenter = pysbd.Segmenter(language="en", clean=True)
 
 embedder = ONNXMiniLM_L6_V2()  # all-MiniLM-L6-v2
 
@@ -71,7 +69,7 @@ def segmentizeDoc(fileName: str):
     with open(sourceFilePath / f"{fileName}.md", "r") as md:
         content = md.read()
 
-    sentence_blocks = segmenter.segment(content)
+    sentence_blocks = text_to_sentences(content).splitlines()
 
     chunkBySimilarity(np.array(sentence_blocks))
 
@@ -86,7 +84,7 @@ def cosine_sim(a: np.array, b: np.array):
     return dot_prod / norm_vec  # a.b / |a||b|
 
 
-def chunkBySimilarity(sentences: list[str], window: int = 2, percentile: float = 85):
+def chunkBySimilarity(sentences: list[str], window: int = 2, percentile: float = 70):
     print("Chunking..")
 
     n = len(sentences)
