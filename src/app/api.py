@@ -1,14 +1,11 @@
 from enum import Enum
-from pathlib import Path
-from rag_system.document_processor import DocumentProcessor
+from app.dependencies import doc_processor, vector_store
 from fastapi import APIRouter, File, UploadFile, HTTPException
 
 fileRouter = APIRouter(
     prefix="/files",
     tags=["File handling"],
 )
-
-doc_processor = DocumentProcessor()
 
 
 class ContentType(Enum):
