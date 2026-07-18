@@ -62,7 +62,7 @@ class DocumentProcessor:
 
         if filePath.exists():
             filePath.unlink()
-            logger.log(f"File {filename} modified successfully.")
+            logger.info(f"File {filename} modified successfully.")
         else:
             logger.error(f"The file {filename} does not exist.")
 

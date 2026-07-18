@@ -79,7 +79,7 @@ class VectorStore:
             documents=chunks,
             metadatas=meta_data,
         )
-
+        print("Data has been stored!")
         # print(*self.collection.get()["metadatas"])
 
     def query_data(self, text: str):
