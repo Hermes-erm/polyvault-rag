@@ -2,6 +2,7 @@ import time
 import numpy as np
 from pathlib import Path
 from fastapi import UploadFile
+from app.dependencies import vector_store
 from blingfire import text_to_sentences
 
 # from docling.document_extractor import DocumentExtractor
@@ -57,7 +58,7 @@ class DocumentProcessor:
         # TODO: Track Doc status by class
         sentence_blocks = self._segmentize_doc(doc_filename)
         chunks = self._chunk_by_similarity(sentence_blocks)  # np.array(sentence_blocks)
-        # storeChunks(chunks, embedder, originalFile)
+        vector_store.store_chunks(chunks, self.staging_dir / f"{file.filename}")
 
     def _load_file(self, fileName: str):
         print("Staging file..")

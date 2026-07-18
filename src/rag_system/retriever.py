@@ -80,4 +80,15 @@ class VectorStore:
             metadatas=meta_data,
         )
 
-        print(*self.collection.get()["metadatas"])
+        # print(*self.collection.get()["metadatas"])
+
+    def query_data(self, text: str):
+        embedding = self.embedder([text])
+        data = self.collection.query(
+            query_embeddings=embedding,
+            n_results=3,
+            include=["documents"],  # "metadatas", "distances"
+        )
+        for doc in data["documents"]:
+            print(doc)
+            print("----------------")
