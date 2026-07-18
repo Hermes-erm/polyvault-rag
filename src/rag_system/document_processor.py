@@ -1,8 +1,8 @@
 import time
 import numpy as np
 from pathlib import Path
-from fastapi import UploadFile
-from app.dependencies import vector_store
+from .retriever import VectorStore
+from .utils import logger
 from blingfire import text_to_sentences
 
 # from docling.document_extractor import DocumentExtractor
@@ -18,7 +18,8 @@ class DocumentProcessor:
 
     def __init__(
         self,
-        embedding_function: embedding_functions = ONNXMiniLM_L6_V2(),
+        vector_store: VectorStore,
+        embedder: embedding_functions = ONNXMiniLM_L6_V2(),
     ):
         self.converter = DocumentConverter(
             allowed_formats=[
@@ -39,29 +40,34 @@ class DocumentProcessor:
                 )
             },
         )
-        self.embedder = embedding_function
+        self.embedder = embedder
+        self.vector_store = vector_store
         self.staging_dir = Path("../../pipeline/staging")
         self.processed_dir = Path("../../pipeline/processed")
 
-    async def run_pipeline(self, file: UploadFile):
-        with open(self.staging_dir / f"{file.filename}", "wb") as fileDest:
-            content = await file.read()
-            fileDest.write(content)
-
-        conv_status, doc_filename = self._load_file(file.filename)
+    def run_pipeline(self, filename: str):
+        conv_status, doc_filename = self._load_file(filename)
 
         if conv_status != ConversionStatus.SUCCESS:
             raise RuntimeError(
-                f"Docling failed to convert '{file.filename}'. Status: {conv_status}"
+                f"Docling failed to convert '{filename}'. Status: {conv_status}"
             )
 
         # TODO: Track Doc status by class
         sentence_blocks = self._segmentize_doc(doc_filename)
         chunks = self._chunk_by_similarity(sentence_blocks)  # np.array(sentence_blocks)
-        vector_store.store_chunks(chunks, self.staging_dir / f"{file.filename}")
+
+        filePath = self.staging_dir / f"{filename}"
+        self.vector_store.store_chunks(chunks, filePath)
+
+        if filePath.exists():
+            filePath.unlink()
+            logger.log(f"File {filename} modified successfully.")
+        else:
+            logger.error(f"The file {filename} does not exist.")
 
     def _load_file(self, fileName: str):
-        print("Staging file..")
+        logger.info("Staging file..")
 
         filePath = self.staging_dir / f"{fileName}"
 
@@ -77,20 +83,13 @@ class DocumentProcessor:
 
         end_time = time.time() - start_time
         execution_time = end_time - start_time
-        print(f"Document processed in {execution_time:.2f} seconds")
-
-        # if filePath.exists(): # NOTE: later use
-        #     filePath.unlink()
-        #     print("File modified successfully.")
-        # else:
-        #     print("The file does not exist.")
+        logger.info(f"Document processed in {execution_time:.2f} seconds")
 
         return conv_result.status, doc_filename
 
     def _segmentize_doc(self, fileName: str):
-        print(f"Segmentizing file {fileName}.md ..")
+        logger.info(f"Segmentizing file {fileName}.md ..")
 
-        content = ""
         with open(self.processed_dir / f"{fileName}.md", "r") as md:
             content = md.read()
 
@@ -101,7 +100,7 @@ class DocumentProcessor:
     def _chunk_by_similarity(
         self, sentences: list[str], window: int = 2, percentile: float = 70
     ):
-        print("Chunking..")
+        logger.info("Chunking..")
 
         n = len(sentences)
 

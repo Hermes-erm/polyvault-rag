@@ -65,7 +65,7 @@ class VectorStore:
                 "total_chunks": len(chunks),
                 "filename": filePath.name,
                 "filetype": filePath.suffix,
-                "token_size": self.token_len(chunk),
+                "token_size": self._token_len(chunk),
                 "created_at": datetime.now(timezone.utc).isoformat(),
             }
             id = f"{filePath}-{i}-{meta['token_size']}"

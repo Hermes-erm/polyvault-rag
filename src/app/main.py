@@ -4,7 +4,7 @@ from .api import fileRouter
 app = FastAPI(
     title="Poly-vault",
     description="",
-    docs_url="/",  # docs_url="/docs"
+    docs_url="/docs",  # docs_url="/"
 )
 
 app.include_router(

@@ -1,3 +1,4 @@
+import logging
 from enum import Enum
 from typing import Optional
 from pydantic import BaseModel
@@ -21,3 +22,7 @@ class MetadataTemplate(BaseModel):
     title: Optional[str] = None
     description: Optional[str] = None
     created_at: datetime
+
+
+logger = logging.getLogger(__name__)
+logger.setLevel(logging.DEBUG)
