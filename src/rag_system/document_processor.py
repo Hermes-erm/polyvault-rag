@@ -6,7 +6,7 @@ from blingfire import text_to_sentences
 
 # from docling.document_extractor import DocumentExtractor
 from docling.document_converter import DocumentConverter, MarkdownFormatOption
-from docling.datamodel.base_models import InputFormat
+from docling.datamodel.base_models import InputFormat, ConversionStatus
 from docling.datamodel.pipeline_options import PipelineOptions
 
 from chromadb.utils import embedding_functions
@@ -47,7 +47,17 @@ class DocumentProcessor:
             content = await file.read()
             fileDest.write(content)
 
-        self._load_file(file.filename)
+        conv_status, doc_filename = self._load_file(file.filename)
+
+        if conv_status != ConversionStatus.SUCCESS:
+            raise RuntimeError(
+                f"Docling failed to convert '{file.filename}'. Status: {conv_status}"
+            )
+
+        # TODO: Track Doc status by class
+        sentence_blocks = self._segmentize_doc(doc_filename)
+        chunks = self._chunk_by_similarity(sentence_blocks)  # np.array(sentence_blocks)
+        # storeChunks(chunks, embedder, originalFile)
 
     def _load_file(self, fileName: str):
         print("Staging file..")
@@ -74,11 +84,9 @@ class DocumentProcessor:
         # else:
         #     print("The file does not exist.")
 
-        self._segmentize_doc(doc_filename, filePath)  # TODO: Track Doc status by class
+        return conv_result.status, doc_filename
 
-        return conv_result.status
-
-    def _segmentize_doc(self, fileName: str, originalFile: Path):
+    def _segmentize_doc(self, fileName: str):
         print(f"Segmentizing file {fileName}.md ..")
 
         content = ""
@@ -87,7 +95,7 @@ class DocumentProcessor:
 
         sentence_blocks = text_to_sentences(content).splitlines()
 
-        chunks = self._chunk_by_similarity(np.array(sentence_blocks))
+        return sentence_blocks
 
     def _chunk_by_similarity(
         self, sentences: list[str], window: int = 2, percentile: float = 70
