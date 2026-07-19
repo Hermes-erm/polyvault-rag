@@ -1,11 +1,16 @@
 from enum import Enum
 from pathlib import Path
-from dependencies import doc_processor
-from fastapi import APIRouter, File, UploadFile, HTTPException, BackgroundTasks
+from dependencies import doc_processor, vector_store
+from fastapi import APIRouter, File, UploadFile, HTTPException, status, BackgroundTasks
 
 fileRouter = APIRouter(
     prefix="/files",
     tags=["File handling"],
+)
+
+queryRouter = APIRouter(
+    prefix="/query",
+    tags=["Query", "RAG"],
 )
 staging_dir = Path("../../pipeline/staging")
 
@@ -34,3 +39,15 @@ async def import_file(
     background_tasks.add_task(doc_processor.run_pipeline, file.filename)
 
     return {"status": "File under processing"}
+
+
+@queryRouter.post("/retrieve/")
+def retrieve_top_chunks(text: str | None = None, top_k: int | None = None):
+    if not text:
+        raise HTTPException(
+            status.HTTP_400_BAD_REQUEST,
+            detail="Query must not be empty",
+        )
+
+    data = vector_store.query_data(text, top_k)
+    return data
