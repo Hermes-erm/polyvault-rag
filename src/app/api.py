@@ -36,7 +36,7 @@ async def import_file(
 
 
 @queryRouter.post("/retrieve/")
-def retrieve_top_chunks(text: str | None = None, top_k: int | None = None):
+def retrieve_top_chunks(text: str | None = None, top_k: int = 3):
     if not text:
         raise HTTPException(
             status.HTTP_400_BAD_REQUEST,
@@ -45,3 +45,11 @@ def retrieve_top_chunks(text: str | None = None, top_k: int | None = None):
 
     data = vector_store.query_data(text, top_k)
     return data
+
+
+@queryRouter.delete("/reset-vector/")
+def reset_vector_store(collection: str | None = None):
+    collection = collection if collection else vector_store.collection_name
+    vector_store.reset_vector(collection)
+
+    return {"message": f"Collection {collection} has been deleted"}

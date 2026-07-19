@@ -5,13 +5,20 @@ from chromadb.errors import NotFoundError
 from chromadb.utils import embedding_functions
 
 from pathlib import Path
-from .utils import logger
+
+# from .utils import logger
 from datetime import datetime, timezone
 from transformers import AutoTokenizer
+from sentence_transformers import CrossEncoder
 
 VECTOR_STORE = chromadb.PersistentClient(
     path="../../chromadb",  # XXX: Path("../../chromadb").resolve()
     settings=Settings(allow_reset=True),  # TODO: add to .env
+)
+
+reranker = CrossEncoder(
+    "cross-encoder/ms-marco-MiniLM-L6-v2",
+    local_files_only=True,  # False
 )
 
 
@@ -83,12 +90,20 @@ class VectorStore:
         logger.info("Data has been stored!")
         # print(*self.collection.get()["metadatas"])
 
-    def query_data(self, text: str, top_k: int = 2):
+    def query_data(self, text: str, top_k: int = 3):
         embedding = self.embedder([text])
         data = self.collection.query(
             query_embeddings=embedding,
             n_results=top_k,
-            include=["documents"],  # "metadatas", "distances"
+            include=["documents", "metadatas"],  # "embeddings", "distances"
         )
 
         return data
+
+    def reset_vector(self, collection_name: str | None = None):
+        if not collection_name:
+            VECTOR_STORE.reset()
+            return
+
+        VECTOR_STORE.delete_collection(name=collection_name)
+        logger.warning(f"Collection {collection_name} has been deleted!")
