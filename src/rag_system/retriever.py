@@ -5,6 +5,7 @@ from chromadb.errors import NotFoundError
 from chromadb.utils import embedding_functions
 
 from pathlib import Path
+from .utils import logger
 from datetime import datetime, timezone
 from transformers import AutoTokenizer
 
@@ -54,7 +55,7 @@ class VectorStore:
         return len(token_size)
 
     def store_chunks(self, chunks: list[str], filePath: Path):
-        print(f"Storing chunks of size ({len(chunks)})..")
+        logger.info(f"Storing chunks of size ({len(chunks)})..")
 
         ids = []
         meta_data = []
@@ -79,7 +80,7 @@ class VectorStore:
             documents=chunks,
             metadatas=meta_data,
         )
-        print("Data has been stored!")
+        logger.info("Data has been stored!")
         # print(*self.collection.get()["metadatas"])
 
     def query_data(self, text: str):

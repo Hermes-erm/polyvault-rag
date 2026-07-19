@@ -64,7 +64,7 @@ class DocumentProcessor:
             filePath.unlink()
             logger.info(f"File {filename} modified successfully.")
         else:
-            logger.error(f"The file {filename} does not exist.")
+            logger.warning(f"The file {filename} does not exist.")
 
     def _load_file(self, fileName: str):
         logger.info("Staging file..")
@@ -81,7 +81,7 @@ class DocumentProcessor:
         ) as fp:
             fp.write(conv_result.document.export_to_markdown(image_placeholder=""))
 
-        end_time = time.time() - start_time
+        end_time = time.time()
         execution_time = end_time - start_time
         logger.info(f"Document processed in {execution_time:.2f} seconds")
 
