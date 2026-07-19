@@ -3,15 +3,9 @@ from pathlib import Path
 from dependencies import doc_processor, vector_store
 from fastapi import APIRouter, File, UploadFile, HTTPException, status, BackgroundTasks
 
-fileRouter = APIRouter(
-    prefix="/files",
-    tags=["File handling"],
-)
+fileRouter = APIRouter(prefix="/files", tags=["File handling"])
+queryRouter = APIRouter(prefix="/query", tags=["Query"])
 
-queryRouter = APIRouter(
-    prefix="/query",
-    tags=["Query", "RAG"],
-)
 staging_dir = Path("../../pipeline/staging")
 
 
