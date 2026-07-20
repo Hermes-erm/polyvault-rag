@@ -16,6 +16,7 @@ class ContentType(Enum):
     PNG = "image/png"
     JPEG = "image/jpeg"
     CSV = "text/csv"
+    TEXT = "text/plain"
 
 
 @fileRouter.post("/import")
