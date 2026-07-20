@@ -58,4 +58,4 @@ class LLMService:
 
         logger.info("Response successfully sent.")
 
-        return interaction
+        return interaction.output_text

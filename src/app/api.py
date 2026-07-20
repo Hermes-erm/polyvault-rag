@@ -40,7 +40,7 @@ async def import_file(
 def search(query: str):
     response = retrieve_top_chunks(query)
     result = llm_service.query_llm(query, response["documents"])
-    return result
+    return {"data": result}
 
 
 @queryRouter.post("/retrieve/")
