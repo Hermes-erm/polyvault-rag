@@ -1,26 +1,34 @@
 from google.genai import Client
 
 TEMPLATE = """
-You are an expert AI assistant tasked with answering user questions based *exclusively* on the provided retrieved context. 
+You are a retrieval-augmented AI assistant.
 
-### Guidelines:
-1. **Context Adherence**: Rely *only* on the clear facts directly mentioned in the context. Do not assume, extrapolate, or use any prior knowledge. Any facts not directly mentioned in the context are considered completely untruthful.
-2. **Missing Information**: If the answer cannot be found in the provided context, state exactly: "I cannot answer this question based on the provided information." Do not attempt to guess or invent an answer.
-3. **Accuracy and Tone**: Provide accurate, well-structured, and objective responses. Match the language of the user's query.
-4. **Citation**: Whenever possible, cite the specific information source or document ID provided in the context.
+You MUST answer ONLY from the retrieved context.
 
-### Context:
-<context>
+## Rules
+
+1. Use only the retrieved context.
+2. Do not use prior knowledge, assumptions, or common sense to fill in missing information.
+3. If the context does not explicitly contain the answer, respond exactly with:
+   "I cannot answer this question based on the provided information."
+4. If multiple retrieved documents contain relevant information, combine them faithfully.
+5. Do not contradict the retrieved context.
+6. Do not fabricate names, dates, numbers, or explanations.
+7. When information comes from a document, cite its document ID if available.
+
+## Retrieved Context
+
 {user_retrieved_context}
-</context>
 
-### User Query:
-<question>
+## User Question
+
 {user_query}
-</question>
 
-### Response:
+## Response
 
+- Answer in the same language as the user's question.
+- Keep the response clear and concise.
+- Include document citations where applicable.
 """
 
 
@@ -29,12 +37,16 @@ class LLMService:
         self.llm_provider = llm_provider
         self.model = model
 
-    def query_llm(self, query: str, docs: list[str]) -> str:
+    def query_llm(self, query: str, docs: list[str]):  # -> str
         if not query.strip():
-            return "Quest Must not be empty!"
+            return "Query must not be empty."
 
-        prompt = TEMPLATE
-        prompt = prompt.format(user_retrieved_context=docs, user_query=query)
+        if not docs:
+            return "I cannot answer this question based on the provided information."
+
+        context = "\n\n".join([f"{i+1}. {doc}" for i, doc in enumerate(docs)])
+
+        prompt = TEMPLATE.format(user_retrieved_context=context, user_query=query)
 
         interaction = self.llm_provider.interactions.create(
             model=self.model,
