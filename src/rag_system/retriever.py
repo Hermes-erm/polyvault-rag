@@ -6,19 +6,16 @@ from chromadb.utils import embedding_functions
 
 from pathlib import Path
 
-# from .utils import logger
+from .utils import logger
 from datetime import datetime, timezone
 from transformers import AutoTokenizer
-from sentence_transformers import CrossEncoder
+
+# from sentence_transformers import CrossEncoder
+from cohere import ClientV2
 
 VECTOR_STORE = chromadb.PersistentClient(
     path="../../chromadb",  # XXX: Path("../../chromadb").resolve()
     settings=Settings(allow_reset=True),  # TODO: add to .env
-)
-
-reranker = CrossEncoder(
-    "cross-encoder/ms-marco-MiniLM-L6-v2",
-    local_files_only=True,  # False
 )
 
 
@@ -26,9 +23,11 @@ class VectorStore:
     def __init__(
         self,
         embedder: embedding_functions,
+        reranker: ClientV2,
         collection_name: str = "multimodal",
     ):
         self.embedder = embedder
+        self.reranker = reranker
         self.tokenizer = AutoTokenizer.from_pretrained(
             pretrained_model_name_or_path="sentence-transformers/all-MiniLM-L6-v2",
             local_files_only=True,
@@ -94,9 +93,12 @@ class VectorStore:
         embedding = self.embedder([text])
         data = self.collection.query(
             query_embeddings=embedding,
-            n_results=top_k,
+            n_results=top_k * 2,
             include=["documents", "metadatas"],  # "embeddings", "distances"
         )
+
+        if True:  # assume reranker is on
+            self.rerank_top_n(text, data["documents"][0])
 
         return data
 
@@ -107,3 +109,14 @@ class VectorStore:
 
         VECTOR_STORE.delete_collection(name=collection_name)
         logger.warning(f"Collection {collection_name} has been deleted!")
+
+    def rerank_top_n(self, query: str, documents: list[str], n: int = 3):
+        response = self.reranker.rerank(
+            model="rerank-v3.5",
+            query=query,
+            documents=documents,
+            top_n=n,
+        )
+
+        logger.debug("Obtained reranked results")
+        print(response)
