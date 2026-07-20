@@ -10,7 +10,6 @@ from .utils import logger
 from datetime import datetime, timezone
 from transformers import AutoTokenizer
 
-# from sentence_transformers import CrossEncoder
 from cohere import ClientV2, V2RerankResponseResultsItem
 
 VECTOR_STORE = chromadb.PersistentClient(
