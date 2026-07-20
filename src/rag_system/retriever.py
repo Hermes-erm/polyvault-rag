@@ -3,15 +3,15 @@ from chromadb.config import Settings
 from chromadb import Collection
 from chromadb.errors import NotFoundError
 from chromadb.utils import embedding_functions
+from chromadb import QueryResult
 
 from pathlib import Path
-
 from .utils import logger
 from datetime import datetime, timezone
 from transformers import AutoTokenizer
 
 # from sentence_transformers import CrossEncoder
-from cohere import ClientV2
+from cohere import ClientV2, V2RerankResponseResultsItem
 
 VECTOR_STORE = chromadb.PersistentClient(
     path="../../chromadb",  # XXX: Path("../../chromadb").resolve()
@@ -97,20 +97,37 @@ class VectorStore:
             include=["documents", "metadatas"],  # "embeddings", "distances"
         )
 
-        if True:  # assume reranker is on
-            self.rerank_top_n(text, data["documents"][0])
+        response = None
 
-        return data
+        if True:  # assume reranker is on (self.reranker)
+            docs = data["documents"][0]
+            logger.debug(
+                f"Reranking {top_k * 2} retrieved documents down to top {top_k}"
+            )
+            results = self.rerank_top_n(text, docs, top_k)
+            response = self._transform_results(data, results)
 
-    def reset_vector(self, collection_name: str | None = None):
-        if not collection_name:
-            VECTOR_STORE.reset()
-            return
+        return response if response is not None else data
 
-        VECTOR_STORE.delete_collection(name=collection_name)
-        logger.warning(f"Collection {collection_name} has been deleted!")
+    def _transform_results(
+        self, data: QueryResult, results: list[V2RerankResponseResultsItem]
+    ):
+        ids_data = data["ids"][0]
+        docs_data = data["documents"][0]
+        metadata_data = data["metadatas"][0]
 
-    def rerank_top_n(self, query: str, documents: list[str], n: int = 3):
+        ids = []
+        documents = []
+        metadatas = []
+
+        for result_item in results:
+            ids.append(ids_data[result_item.index])
+            documents.append(docs_data[result_item.index])
+            metadatas.append(metadata_data[result_item.index])
+
+        return {"ids": ids, "documents": documents, "metadatas": metadatas}
+
+    def rerank_top_n(self, query: str, documents: list[str], n: int):
         response = self.reranker.rerank(
             model="rerank-v3.5",
             query=query,
@@ -119,4 +136,18 @@ class VectorStore:
         )
 
         logger.debug("Obtained reranked results")
-        print(response)
+        return response.results
+
+        # for result_item in response.results:
+        #     print(
+        #         f"Document Index: {result_item.index}, Score: {result_item.relevance_score:.3f}"
+        #     )
+        #     print(f"Text: {documents[result_item.index]}\n")
+
+    def reset_vector(self, collection_name: str | None = None):
+        if not collection_name:
+            VECTOR_STORE.reset()
+            return
+
+        VECTOR_STORE.delete_collection(name=collection_name)
+        logger.warning(f"Collection {collection_name} has been deleted!")
