@@ -1,5 +1,6 @@
 from rag_system.retriever import VectorStore
 from rag_system.document_processor import DocumentProcessor
+from rag_system.generator import LLMService
 
 import cohere
 from google import genai
@@ -17,8 +18,8 @@ cross_encoder = cohere.ClientV2(
 )
 
 ai_client = genai.Client(api_key=config.get("GEMINI_API_KEY"))
-# interaction = ai_client.create()
 
 # Singleton instance
 vector_store = VectorStore(embedder=embedder, reranker=cross_encoder)
 doc_processor = DocumentProcessor(vector_store, embedder=embedder)
+llm_service = LLMService(llm_provider=ai_client, model="gemini-3.5-flash")

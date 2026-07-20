@@ -1,6 +1,6 @@
 from enum import Enum
 from pathlib import Path
-from dependencies import doc_processor, vector_store
+from dependencies import doc_processor, vector_store, llm_service
 from fastapi import APIRouter, File, UploadFile, HTTPException, status, BackgroundTasks
 
 fileRouter = APIRouter(prefix="/files", tags=["File handling"])
@@ -34,6 +34,13 @@ async def import_file(
     background_tasks.add_task(doc_processor.run_pipeline, file.filename)
 
     return {"status": "File under processing"}
+
+
+@queryRouter.get("/search")
+def search(query: str):
+    response = retrieve_top_chunks(query)
+    result = llm_service.query_llm(query, response["documents"])
+    return result
 
 
 @queryRouter.post("/retrieve/")

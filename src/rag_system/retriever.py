@@ -89,6 +89,8 @@ class VectorStore:
         # print(*self.collection.get()["metadatas"])
 
     def query_data(self, text: str, top_k: int = 3):
+        logger.debug(f"Retrieving top {top_k} relevant chunks...")
+
         embedding = self.embedder([text])
         data = self.collection.query(
             query_embeddings=embedding,

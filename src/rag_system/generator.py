@@ -1,4 +1,5 @@
 from google.genai import Client
+from .utils import logger
 
 TEMPLATE = """
 You are a retrieval-augmented AI assistant.
@@ -44,6 +45,8 @@ class LLMService:
         if not docs:
             return "I cannot answer this question based on the provided information."
 
+        logger.debug(f"Querying model '{self.model}'...")
+
         context = "\n\n".join([f"{i+1}. {doc}" for i, doc in enumerate(docs)])
 
         prompt = TEMPLATE.format(user_retrieved_context=context, user_query=query)
@@ -52,5 +55,7 @@ class LLMService:
             model=self.model,
             input=prompt,
         )
+
+        logger.info("Response successfully sent.")
 
         return interaction
