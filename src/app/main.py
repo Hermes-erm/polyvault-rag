@@ -9,3 +9,5 @@ app = FastAPI(
 
 app.include_router(fileRouter, prefix="/rag")
 app.include_router(queryRouter)
+
+app.frontend("/", directory="static", fallback=None)  # fallback="404.html"
