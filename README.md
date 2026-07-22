@@ -4,6 +4,8 @@ A multimodal RAG service that ingests documents, chunks them by meaning, stores 
 
 ![Architecture](/docs/rag-architecture.jpg)
 
+#### Board link - https://miro.com/app/board/uXjVH8rkfWQ=/?share_link_id=285379039612
+
 ## How it works
 
 **Ingestion**
