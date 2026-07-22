@@ -1,0 +1,10 @@
+blingfire==0.1.8
+cohere==7.0.7
+colorlog==6.10.1
+docling==2.114.0
+fastapi==0.139.2
+numpy==2.5.1
+protobuf==7.35.1
+pydantic==2.13.4
+python-dotenv==1.2.2
+transformers==5.13.1
