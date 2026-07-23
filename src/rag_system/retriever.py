@@ -8,9 +8,11 @@ from chromadb import QueryResult
 from pathlib import Path
 from .utils import logger
 from datetime import datetime, timezone
+from fastapi import HTTPException
 from transformers import AutoTokenizer
 
 from cohere import ClientV2, V2RerankResponseResultsItem
+from cohere.errors.bad_request_error import BadRequestError
 
 VECTOR_STORE = chromadb.PersistentClient(
     path="../../chromadb",  # XXX: Path("../../chromadb").resolve()
@@ -129,12 +131,16 @@ class VectorStore:
         return {"ids": ids, "documents": documents, "metadatas": metadatas}
 
     def rerank_top_n(self, query: str, documents: list[str], n: int):
-        response = self.reranker.rerank(
-            model="rerank-v3.5",
-            query=query,
-            documents=documents,
-            top_n=n,
-        )
+        try:
+            response = self.reranker.rerank(
+                model="rerank-v3.5",
+                query=query,
+                documents=documents,
+                top_n=n,
+            )
+        except BadRequestError as bad_req:
+            # raise HTTPException(status_code=bad_req.status_code, detail=bad_req.body)
+            return []
 
         logger.debug("Obtained reranked results")
         return response.results
