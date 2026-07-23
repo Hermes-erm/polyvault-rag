@@ -41,7 +41,7 @@ async def import_file(
         content = await file.read()
         fileDest.write(content)
 
-    background_tasks.add_task(doc_processor.run_pipeline, file.filename)
+    background_tasks.add_task(doc_processor.run_pipeline, file.filename, db)
 
     return {"status": "File under processing"}
 

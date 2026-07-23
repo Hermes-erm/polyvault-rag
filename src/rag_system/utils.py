@@ -25,7 +25,7 @@ class MetadataTemplate(BaseModel):
     created_at: datetime
 
 
-class PipelineModel(BaseModel):
+class PipelineSchema(BaseModel):
     id: int
     name: str
     chunks: str

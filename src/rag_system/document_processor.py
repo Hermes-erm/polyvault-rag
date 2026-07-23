@@ -4,6 +4,7 @@ from pathlib import Path
 from .utils import logger
 from sqlalchemy.orm import Session
 from .retriever import VectorStore
+from .model import PipelineRepository
 from blingfire import text_to_sentences
 
 # from docling.document_extractor import DocumentExtractor
@@ -20,6 +21,7 @@ class DocumentProcessor:
     def __init__(
         self,
         vector_store: VectorStore,
+        pipeline_repository: PipelineRepository,
         embedder: embedding_functions = ONNXMiniLM_L6_V2(),
     ):
         self.converter = DocumentConverter(

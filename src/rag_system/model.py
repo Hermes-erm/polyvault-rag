@@ -1,8 +1,10 @@
 from sqlalchemy import Column, Integer, String
-from dependencies import Base
+from sqlalchemy.ext.declarative import declarative_base
+
+Base = declarative_base()
 
 
-class Pipeline(Base):
+class Pipeline(Base):  # Table
     __tablename__ = "pipelines"
 
     id = Column(Integer, primary_key=True, index=True)
@@ -10,3 +12,15 @@ class Pipeline(Base):
     chunks = Column(Integer)
     size = Column(Integer)
     status = Column(String)
+    desc = Column(String, default="No description provided")
+
+
+class PipelineRepository:
+    def __init__(self):
+        pass
+
+    def add_doc(self):
+        pass
+
+    def update_doc_status(self):
+        pass
