@@ -1,8 +1,9 @@
 import time
 import numpy as np
 from pathlib import Path
-from .retriever import VectorStore
 from .utils import logger
+from sqlalchemy.orm import Session
+from .retriever import VectorStore
 from blingfire import text_to_sentences
 
 # from docling.document_extractor import DocumentExtractor
@@ -45,7 +46,7 @@ class DocumentProcessor:
         self.staging_dir = Path("../../pipeline/staging")
         self.processed_dir = Path("../../pipeline/processed")
 
-    def run_pipeline(self, filename: str):
+    def run_pipeline(self, filename: str, db: Session):
         conv_status, doc_filename = self._load_file(filename)
 
         if conv_status != ConversionStatus.SUCCESS:

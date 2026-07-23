@@ -1,7 +1,16 @@
 from enum import Enum
 from pathlib import Path
-from dependencies import doc_processor, vector_store, llm_service
-from fastapi import APIRouter, File, UploadFile, HTTPException, status, BackgroundTasks
+from dependencies import doc_processor, vector_store, llm_service, get_db
+from sqlalchemy.orm import Session
+from fastapi import (
+    APIRouter,
+    File,
+    UploadFile,
+    HTTPException,
+    status,
+    BackgroundTasks,
+    Depends,
+)
 
 fileRouter = APIRouter(prefix="/files", tags=["File handling"])
 queryRouter = APIRouter(prefix="/query", tags=["Query"])
@@ -23,6 +32,7 @@ class ContentType(Enum):
 async def import_file(
     background_tasks: BackgroundTasks,
     file: UploadFile = File(...),
+    db: Session = Depends(get_db),
 ):  # File(...): expect multipart/form-data rather than JSON
     if file.content_type not in ContentType:
         raise HTTPException(415, "Unsupported file type")
@@ -37,7 +47,10 @@ async def import_file(
 
 
 @queryRouter.get("/search")
-def search(query: str):
+def search(
+    query: str,
+    # db: Session = Depends(get_db), # NOTE: store conversation
+):
     response = retrieve_top_chunks(query)
     result = llm_service.query_llm(query, response["documents"])
     return {"data": result}

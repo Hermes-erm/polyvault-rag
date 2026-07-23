@@ -25,6 +25,14 @@ class MetadataTemplate(BaseModel):
     created_at: datetime
 
 
+class PipelineModel(BaseModel):
+    id: int
+    name: str
+    chunks: str
+    size: str
+    status: str
+
+
 handler = colorlog.StreamHandler()
 handler.setFormatter(
     colorlog.ColoredFormatter(
