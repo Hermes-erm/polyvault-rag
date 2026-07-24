@@ -50,7 +50,11 @@ class DocumentProcessor:
         self.processed_dir = Path("../../pipeline/processed")
 
     def run_pipeline(self, filename: str, db: Session):
-        self.repository.add_doc(db, PipelineSchema(filename=filename))
+        filePath = self.staging_dir / f"{filename}"
+
+        doc_create = self.repository.add_doc(
+            db, PipelineSchema(filename=filename, size=filePath.stat().st_size)
+        )
 
         conv_status, doc_filename = self._load_file(filename)
 
@@ -60,7 +64,7 @@ class DocumentProcessor:
                 PipelineSchema(
                     filename=filename,
                     desc="Converstion failed",
-                    status=ProcessingStatus.FAILURE,
+                    status=ProcessingStatus.FAILED,
                 ),
             )
             raise RuntimeError(
@@ -69,9 +73,19 @@ class DocumentProcessor:
 
         # TODO: Track Doc status by class
         sentence_blocks = self._segmentize_doc(doc_filename)
-        chunks = self._chunk_by_similarity(sentence_blocks)  # np.array(sentence_blocks)
 
-        filePath = self.staging_dir / f"{filename}"
+        self.repository.update_doc(
+            db,
+            PipelineSchema(
+                filename=doc_create.name,
+                status=ProcessingStatus.EMBEDDING,
+                desc="File under embedding",
+            ),
+            doc_id=doc_create.id,
+        )
+        return
+        chunks = self._chunk_by_similarity(sentence_blocks)
+
         self.vector_store.store_chunks(chunks, filePath)
 
         if filePath.exists():
