@@ -1,6 +1,6 @@
 from enum import Enum
 from pathlib import Path
-from dependencies import doc_processor, vector_store, llm_service, get_db
+from dependencies import doc_processor, vector_store, llm_service, pipeline, get_db
 from sqlalchemy.orm import Session
 from fastapi import (
     APIRouter,
@@ -44,6 +44,12 @@ async def import_file(
     background_tasks.add_task(doc_processor.run_pipeline, file.filename, db)
 
     return {"status": "File under processing"}
+
+
+@fileRouter.get("/")
+def get_all_files(db: Session = Depends(get_db)):
+    docs = pipeline.get_all_docs(db)
+    return docs
 
 
 @queryRouter.get("/search")

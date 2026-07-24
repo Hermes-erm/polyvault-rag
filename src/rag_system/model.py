@@ -25,6 +25,10 @@ class PipelineRepository:
     def __init__(self):
         pass
 
+    def get_all_docs(self, db: Session):
+        docs = db.query(Pipeline).all()
+        return docs
+
     def add_doc(self, db: Session, doc: PipelineSchema):
         doc_create = Pipeline(
             name=doc.filename,
@@ -48,6 +52,7 @@ class PipelineRepository:
 
         setattr(doc_result, "status", doc.status)
         setattr(doc_result, "desc", doc.desc)
+        setattr(doc_result, "chunks", doc.chunks)
         db.commit()
         db.refresh(doc_result)
 
