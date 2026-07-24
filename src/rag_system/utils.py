@@ -7,11 +7,12 @@ from datetime import datetime
 
 
 class ProcessingStatus(str, Enum):
-    STAGING = "staging"
-    EMBEDDING = "embedding"
-    INDEXED = "indexed"
-    FAILED = "failed"
+    PENDING = "pending"
+    STARTED = "started"
+    FAILURE = "failure"
     SUCCESS = "success"
+    PARTIAL_SUCCESS = "partial_success"
+    SKIPPED = "skipped"
 
 
 class MetadataTemplate(BaseModel):
@@ -25,12 +26,12 @@ class MetadataTemplate(BaseModel):
 
 
 class PipelineSchema(BaseModel):
-    id: Optional[int] = None
+    # id: int
     filename: str
     type: Optional[str] = None
     chunks: Optional[int] = 0
-    size: Optional[str] = "0 B"
-    status: ProcessingStatus = ProcessingStatus.STAGING
+    size: Optional[int] = 0
+    status: ProcessingStatus = ProcessingStatus.STARTED
     desc: Optional[str] = "Document under staging"
 
 
