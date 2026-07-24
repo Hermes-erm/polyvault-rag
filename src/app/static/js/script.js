@@ -1,4 +1,7 @@
-const API = "http://localhost:8000";
+HOST = "localhost";
+PORT = 8000;
+
+const API = `http://${HOST}:${PORT}`;
 
 const $ = (id) => document.getElementById(id);
 const table = $("table");
