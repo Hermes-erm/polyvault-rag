@@ -83,10 +83,20 @@ class DocumentProcessor:
             ),
             doc_id=doc_create.id,
         )
-        return
+
         chunks = self._chunk_by_similarity(sentence_blocks)
 
         self.vector_store.store_chunks(chunks, filePath)
+
+        self.repository.update_doc(
+            db,
+            PipelineSchema(
+                filename=doc_create.name,
+                status=ProcessingStatus.INDEXED,
+                desc="File has been saved",
+            ),
+            doc_id=doc_create.id,
+        )
 
         if filePath.exists():
             filePath.unlink()
