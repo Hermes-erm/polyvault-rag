@@ -61,6 +61,12 @@ class PipelineRepository:
 
         return doc_result
 
+    def clear_all_docs(self, db: Session):
+        db.query(Pipeline).delete()
+        db.commit()
+
+        logger.warning("Database wiped out!")
+
     def _format_bytes(self, byte_size: int):
         units = ["B", "KB", "MB", "GB"]
 

@@ -75,8 +75,9 @@ def retrieve_top_chunks(text: str | None = None, top_k: int = 3):
 
 
 @queryRouter.delete("/reset-vector/")
-def reset_vector_store(collection: str | None = None):
+def reset_vector_store(collection: str | None = None, db: Session = Depends(get_db)):
     collection = collection if collection else vector_store.collection_name
     vector_store.reset_vector(collection)
+    pipeline.clear_all_docs(db)
 
     return {"message": f"Collection {collection} has been deleted"}
