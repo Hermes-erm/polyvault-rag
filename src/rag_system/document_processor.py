@@ -92,6 +92,7 @@ class DocumentProcessor:
             db,
             PipelineSchema(
                 filename=doc_create.name,
+                chunks=len(chunks),
                 status=ProcessingStatus.INDEXED,
                 desc="File has been saved",
             ),

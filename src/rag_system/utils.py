@@ -29,7 +29,7 @@ class PipelineSchema(BaseModel):
     filename: str
     type: Optional[str] = None
     chunks: Optional[int] = 0
-    size: Optional[str] = "0 B"
+    size: Optional[int] = "0 B"
     status: ProcessingStatus = ProcessingStatus.STAGING
     desc: Optional[str] = "Document under staging"
 
