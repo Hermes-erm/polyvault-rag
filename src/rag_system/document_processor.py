@@ -1,7 +1,7 @@
 import time
 import numpy as np
 from pathlib import Path
-from .utils import logger
+from .utils import logger, ProcessingStatus, PipelineSchema
 from sqlalchemy.orm import Session
 from .retriever import VectorStore
 from .model import PipelineRepository
@@ -21,7 +21,7 @@ class DocumentProcessor:
     def __init__(
         self,
         vector_store: VectorStore,
-        pipeline_repository: PipelineRepository,
+        repository: PipelineRepository,
         embedder: embedding_functions = ONNXMiniLM_L6_V2(),
     ):
         self.converter = DocumentConverter(
@@ -45,13 +45,24 @@ class DocumentProcessor:
         )
         self.embedder = embedder
         self.vector_store = vector_store
+        self.repository = repository
         self.staging_dir = Path("../../pipeline/staging")
         self.processed_dir = Path("../../pipeline/processed")
 
     def run_pipeline(self, filename: str, db: Session):
+        self.repository.add_doc(db, PipelineSchema(filename=filename))
+
         conv_status, doc_filename = self._load_file(filename)
 
         if conv_status != ConversionStatus.SUCCESS:
+            self.repository.add_doc(
+                db,
+                PipelineSchema(
+                    filename=filename,
+                    desc="Converstion failed",
+                    status=ProcessingStatus.FAILURE,
+                ),
+            )
             raise RuntimeError(
                 f"Docling failed to convert '{filename}'. Status: {conv_status}"
             )

@@ -221,3 +221,4 @@ multimodal/
 
 pipeline/
 chromadb/
+pipeline.db

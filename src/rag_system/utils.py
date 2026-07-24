@@ -26,11 +26,13 @@ class MetadataTemplate(BaseModel):
 
 
 class PipelineSchema(BaseModel):
-    id: int
-    name: str
-    chunks: str
-    size: str
-    status: str
+    # id: int
+    filename: str
+    type: Optional[str] = None
+    chunks: Optional[int] = 0
+    size: Optional[int] = 0
+    status: ProcessingStatus = ProcessingStatus.STARTED
+    desc: Optional[str] = "Document under staging"
 
 
 handler = colorlog.StreamHandler()
