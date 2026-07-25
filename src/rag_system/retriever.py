@@ -76,7 +76,7 @@ class VectorStore:
                 "token_size": self._token_len(chunk),
                 "created_at": datetime.now(timezone.utc).isoformat(),
             }
-            id = f"{filePath}-{i}-{meta['token_size']}"
+            id = f"{filePath.name}-{i}-{meta['token_size']}"
 
             meta_data.append(meta)
             ids.append(id)
@@ -88,7 +88,8 @@ class VectorStore:
             metadatas=meta_data,
         )
         logger.info("Data has been stored!")
-        # print(*self.collection.get()["metadatas"])
+
+        return {"ids": ids, "metadatas": meta_data}
 
     def query_data(self, text: str, top_k: int = 3):
         logger.debug(f"Retrieving top {top_k} relevant chunks...")

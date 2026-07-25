@@ -85,8 +85,7 @@ class DocumentProcessor:
         )
 
         chunks = self._chunk_by_similarity(sentence_blocks)
-
-        self.vector_store.store_chunks(chunks, filePath)
+        docs = self.vector_store.store_chunks(chunks, filePath)
 
         self.repository.update_doc(
             db,
@@ -95,6 +94,7 @@ class DocumentProcessor:
                 chunks=len(chunks),
                 status=ProcessingStatus.INDEXED,
                 desc="File has been saved",
+                doc_ids=docs["ids"],
             ),
             doc_id=doc_create.id,
         )

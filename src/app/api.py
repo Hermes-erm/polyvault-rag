@@ -52,6 +52,11 @@ def get_all_files(db: Session = Depends(get_db)):
     return docs
 
 
+@fileRouter.delete("/")
+def delte_doc(doc_id: int):
+    print(doc_id)
+
+
 @queryRouter.get("/search")
 def search(
     query: str,

@@ -1,5 +1,6 @@
 from sqlalchemy.orm import Session
 from sqlalchemy import Column, Integer, String
+from sqlalchemy.types import JSON
 from sqlalchemy.ext.declarative import declarative_base
 
 from .utils import logger, PipelineSchema
@@ -16,6 +17,7 @@ class Pipeline(Base):  # Table
     size = Column(String, default="0 B")
     status = Column(String)
     desc = Column(String, default="No description provided")
+    doc_ids = Column(JSON, default=list)
 
     def __repr__(self):
         return f"Pipeline(id={self.id}, name={self.name}, status={self.status}, chunks={self.chunks}, size={self.size}, desc={self.desc})"
@@ -53,6 +55,8 @@ class PipelineRepository:
         setattr(doc_result, "status", doc.status)
         setattr(doc_result, "desc", doc.desc)
         setattr(doc_result, "chunks", doc.chunks)
+        setattr(doc_result, "doc_ids", doc.doc_ids)
+
         db.commit()
         db.refresh(doc_result)
 
