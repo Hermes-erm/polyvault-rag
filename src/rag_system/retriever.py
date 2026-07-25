@@ -152,6 +152,13 @@ class VectorStore:
         #     )
         #     print(f"Text: {documents[result_item.index]}\n")
 
+    def remove_by_ids(self, ids: list[str]):
+        if not len(ids):
+            return []
+
+        docs = self.collection.delete(ids=ids)
+        return docs
+
     def reset_vector(self, collection_name: str | None = None):
         if not collection_name:
             VECTOR_STORE.reset()
