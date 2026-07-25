@@ -8,8 +8,7 @@ from chromadb import QueryResult
 from pathlib import Path
 from .utils import logger
 from datetime import datetime, timezone
-from fastapi import HTTPException
-from transformers import AutoTokenizer
+from sentence_transformers import SentenceTransformer
 
 from cohere import ClientV2, V2RerankResponseResultsItem
 from cohere.errors.bad_request_error import BadRequestError
@@ -29,10 +28,10 @@ class VectorStore:
     ):
         self.embedder = embedder
         self.reranker = reranker
-        self.tokenizer = AutoTokenizer.from_pretrained(
-            pretrained_model_name_or_path="sentence-transformers/all-MiniLM-L6-v2",
+        self.tokenizer = SentenceTransformer(
+            model_name_or_path="sentence-transformers/all-MiniLM-L6-v2",
             local_files_only=True,
-        )
+        ).tokenizer
         self.collection_name = collection_name
         self.collection_metadata = {
             "name": collection_name,
@@ -57,8 +56,8 @@ class VectorStore:
         return generic_collection
 
     def _token_len(self, text: str):
-        tokenie_txt = self.tokenizer(text, truncation=False, max_length=256)
-        token_size = tokenie_txt["input_ids"]
+        tokenize_txt = self.tokenizer(text, truncation=False, max_length=256)
+        token_size = tokenize_txt["input_ids"]
         return len(token_size)
 
     def store_chunks(self, chunks: list[str], filePath: Path):
