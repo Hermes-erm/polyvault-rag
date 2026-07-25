@@ -1,7 +1,4 @@
-HOST = "localhost";
-PORT = 8000;
-
-const API = `http://${HOST}:${PORT}`;
+const API = "http://localhost:8000";
 
 const $ = (id) => document.getElementById(id);
 const table = $("table");
@@ -37,6 +34,7 @@ function render(files) {
         cell(f.chunks ?? "—"),
         cell(f.size ?? "—"),
         cell(f.status ?? "unknown", `badge badge--${f.status ?? "unknown"}`),
+        delButton(f),
       );
       table.insertBefore(row, tableMsg);
     }
@@ -51,6 +49,76 @@ function cell(text, className) {
   el.textContent = text;
   if (className) el.className = className;
   return el;
+}
+
+/* ---------- delete ---------- */
+
+const TRASH = `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M9 7V5a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2M10 11v6M14 11v6M6 7l1 12a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1l1-12"/></svg>`;
+
+let armed = null;
+let armTimer = null;
+
+function disarm() {
+  clearTimeout(armTimer);
+  armed?.classList.remove("del--armed");
+  armed = null;
+}
+
+document.addEventListener("click", (e) => {
+  if (!e.target.closest(".del")) disarm();
+});
+
+function delButton(file) {
+  const btn = document.createElement("button");
+  const id = file.id ?? file.doc_id;
+  const name = file.name ?? "this document";
+
+  btn.type = "button";
+  btn.className = "del";
+  btn.innerHTML = TRASH;
+
+  if (id == null) {
+    btn.disabled = true;
+    btn.title = "No id returned for this document";
+    return btn;
+  }
+
+  btn.title = `Delete ${name}`;
+  btn.setAttribute("aria-label", `Delete ${name}`);
+
+  btn.addEventListener("click", () => {
+    // First click arms, second click deletes — no modal, no accidents.
+    if (armed !== btn) {
+      disarm();
+      armed = btn;
+      btn.classList.add("del--armed");
+      btn.title = `Click again to delete ${name}`;
+      armTimer = setTimeout(() => {
+        btn.title = `Delete ${name}`;
+        disarm();
+      }, 4000);
+      return;
+    }
+    disarm();
+    btn.title = `Delete ${name}`;
+    remove(id, name, btn);
+  });
+
+  return btn;
+}
+
+async function remove(id, name, btn) {
+  btn.disabled = true;
+  try {
+    await call(`/rag/files/?doc_id=${encodeURIComponent(id)}`, {
+      method: "DELETE",
+    });
+    await loadFiles();
+  } catch (err) {
+    btn.disabled = false;
+    tableMsg.hidden = false;
+    tableMsg.textContent = `Could not delete ${name} — ${err.message}`;
+  }
 }
 
 async function loadFiles() {
