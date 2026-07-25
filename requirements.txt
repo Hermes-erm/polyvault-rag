@@ -1,10 +1,11 @@
 blingfire==0.1.8
-cohere==7.0.7
+cohere==7.0.8
 colorlog==6.10.1
-docling==2.114.0
-fastapi==0.139.2
+docling==2.115.0
+fastapi==0.140.0
 numpy==2.5.1
 protobuf==7.35.1
 pydantic==2.13.4
 python-dotenv==1.2.2
-transformers==5.13.1
+sentence_transformers==5.6.0
+SQLAlchemy==2.0.51
