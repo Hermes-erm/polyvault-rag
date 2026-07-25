@@ -53,8 +53,10 @@ def get_all_files(db: Session = Depends(get_db)):
 
 
 @fileRouter.delete("/")
-def delte_doc(doc_id: int):
-    print(doc_id)
+def delte_doc(doc_id: int, db: Session = Depends(get_db)):
+    doc_ids = pipeline.delete_doc(db, doc_id)
+    docs = vector_store.remove_by_ids(doc_ids)
+    return docs
 
 
 @queryRouter.get("/search")
