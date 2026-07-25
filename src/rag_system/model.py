@@ -67,6 +67,10 @@ class PipelineRepository:
 
     def delete_doc(self, db: Session, doc_id: int):
         doc = db.query(Pipeline).filter(Pipeline.id == doc_id).first()
+
+        if not doc:
+            return []
+
         ids = doc.doc_ids
 
         db.delete(doc)
