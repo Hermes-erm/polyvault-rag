@@ -32,6 +32,7 @@ class PipelineSchema(BaseModel):
     size: Optional[int] = "0 B"
     status: ProcessingStatus = ProcessingStatus.STAGING
     desc: Optional[str] = "Document under staging"
+    doc_ids: Optional[list[str]] = []
 
 
 handler = colorlog.StreamHandler()
