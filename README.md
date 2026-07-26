@@ -14,6 +14,7 @@ A multimodal RAG service that ingests documents, chunks them by meaning, stores 
 2. Split the text into sentences with BlingFire.
 3. Group related sentences into semantic chunks.
 4. Generate embeddings and store them in ChromaDB.
+5. Track each document's progress (staging → embedding → indexed / failed) in SQLite.
 
 ### Query flow
 
@@ -30,10 +31,12 @@ A multimodal RAG service that ingests documents, chunks them by meaning, stores 
 - Context-grounded answers
 - Background document processing
 - Persistent ChromaDB storage
+- Document status tracking in SQLite
+- Minimal web UI for upload, listing, deletion, and querying
 
 ## Stack
 
-FastAPI · Docling · BlingFire · ChromaDB · MiniLM embeddings · Cohere reranker · Gemini
+FastAPI · Docling · BlingFire · ChromaDB · MiniLM embeddings · Cohere reranker · Gemini · SQLAlchemy/SQLite
 
 ## Project Structure
 
@@ -43,14 +46,18 @@ poly-vault/
 │   ├── document_processor.py   # Parse → split → chunk → store
 │   ├── retriever.py            # ChromaDB store, query, rerank
 │   ├── generator.py            # Gemini service + RAG prompt
-│   └── utils.py                # Logger, models
+│   ├── model.py                # Pipeline table + repository
+│   └── utils.py                # Logger, schemas, status enum
 ├── app/
 │   ├── main.py                 # FastAPI app + routers
 │   ├── api.py                  # File + query routes
-│   └── dependencies.py         # Singleton wiring
+│   ├── dependencies.py         # Singleton wiring, DB session
+│   └── static/                 # index.html, style.css, js/script.js
 ├── pipeline/{staging,processed}/
 ├── chromadb/                   # Vector store
-├── docs/architecture.png
+├── pipeline.db                 # Document metadata
+├── docs/rag-architecture.jpg
+├── Dockerfile
 └── .env
 ```
 
@@ -74,10 +81,17 @@ GEMINI_API_KEY=your_key
 Run the application:
 
 ```bash
-polyvault-rag/src/app: fastapi run main.py | uvicorn app.main:app --reload
+polyvault-rag/src/app:~ fastapi run main.py | uvicorn app.main:app --reload
 ```
 
-Open the API docs at:
+Or with Docker:
+
+```bash
+docker build -t poly-vault .
+docker run -p 8000:8000 --env-file .env poly-vault
+```
+
+Open the UI at `http://127.0.0.1:8000/` and the API docs at:
 
 ```
 http://127.0.0.1:8000/docs
@@ -88,6 +102,8 @@ http://127.0.0.1:8000/docs
 | Method | Endpoint                  | Description               |
 | ------ | ------------------------- | ------------------------- |
 | POST   | `/rag/files/import`       | Upload a document         |
+| GET    | `/rag/files/`             | List documents            |
+| DELETE | `/rag/files/?doc_id=...`  | Delete a document         |
 | GET    | `/query/search?query=...` | Ask a question            |
 | POST   | `/query/retrieve`         | Retrieve relevant chunks  |
 | DELETE | `/query/reset-vector`     | Clear the vector database |
@@ -110,5 +126,6 @@ curl "http://127.0.0.1:8000/query/search?query=What is the refund policy?"
 ## Notes
 
 - Models can be changed in `dependencies.py`.
-- MiniLM should be available locally because the tokenizer uses `local_files_only=True`.
-- `reset-vector` permanently clears the stored embeddings.
+- The MiniLM tokenizer is fetched on first run (`local_files_only=False`); set it to `True` in `retriever.py` to run fully offline.
+- Deleting a document removes both its database row and its vectors.
+- `reset-vector` permanently clears the stored embeddings and the document table.

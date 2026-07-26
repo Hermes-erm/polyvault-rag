@@ -30,7 +30,7 @@ class VectorStore:
         self.reranker = reranker
         self.tokenizer = SentenceTransformer(
             model_name_or_path="sentence-transformers/all-MiniLM-L6-v2",
-            local_files_only=True,
+            local_files_only=False,
         ).tokenizer
         self.collection_name = collection_name
         self.collection_metadata = {
