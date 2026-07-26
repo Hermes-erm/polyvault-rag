@@ -9,3 +9,6 @@ pydantic==2.13.4
 python-dotenv==1.2.2
 sentence_transformers==5.6.0
 SQLAlchemy==2.0.51
+chromadb==1.5.9
+google-genai==2.12.1
+rapidocr==3.9.1
