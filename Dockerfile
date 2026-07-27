@@ -11,9 +11,9 @@ RUN apt-get update && \
         libxcb1 && \
     rm -rf /var/lib/apt/lists/*
 
-RUN pip install --no-cache-dir -r requirements.txt
-RUN pip install --no-cache-dir "fastapi[standard]"
-RUN pip install --no-cache-dir "docling[rapidocr]"
+# Installing torch from the regular, This grabs the CPU-only build instead. PyPI gives you the GPU build with
+RUN pip install --index-url https://download.pytorch.org/whl/cpu torch torchvision && \
+    pip install -r requirements.txt
 
 COPY . .
 
