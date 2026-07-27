@@ -12,3 +12,5 @@ SQLAlchemy==2.0.51
 chromadb==1.5.9
 google-genai==2.12.1
 rapidocr==3.9.1
+fastapi[standard]==0.140.0
+docling[rapidocr]==2.115.0
