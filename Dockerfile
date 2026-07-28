@@ -2,6 +2,9 @@ FROM python:3.14-slim
 
 WORKDIR /app
 
+ENV PIP_NO_CACHE_DIR=1 \
+    PYTHONDONTWRITEBYTECODE=1
+
 COPY requirements.txt .
 
 RUN apt-get update && \
@@ -11,7 +14,7 @@ RUN apt-get update && \
         libxcb1 && \
     rm -rf /var/lib/apt/lists/*
 
-# Installing torch from the regular, This grabs the CPU-only build instead. PyPI gives you the GPU build with
+# Installing torch from the regular,PyPI gives you the GPU build with. This instl cmd grabs the CPU-only build instead. 
 RUN pip install --index-url https://download.pytorch.org/whl/cpu torch torchvision && \
     pip install -r requirements.txt
 
