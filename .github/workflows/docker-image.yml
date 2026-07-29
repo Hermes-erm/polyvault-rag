@@ -25,7 +25,7 @@ jobs:
         uses: docker/metadata-action@v6
         with:
           images: hermeserm/polyvault
-          tags: type=raw,value={{sha}}
+          tags: type=sha,prefix=
 
       - name: Build and push Docker image
         id: push
@@ -36,3 +36,7 @@ jobs:
           push: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
+
+      - name: Fail if no tags were generated
+        run: |
+          [ -n "${{ steps.meta.outputs.tags }}" ] || { echo "::error::no tags generated"; exit 1; }
