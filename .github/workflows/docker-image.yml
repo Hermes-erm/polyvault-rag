@@ -25,8 +25,7 @@ jobs:
         uses: docker/metadata-action@v6
         with:
           images: hermeserm/polyvault
-          tags: | # format=short
-            type=sha,enable=true,prefix=sha-,format=long
+          tags: type=raw,value={{sha}}
 
       - name: Build and push Docker image
         id: push
