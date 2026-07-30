@@ -30,6 +30,10 @@ jobs:
           images: hermeserm/polyvault
           tags: type=sha,prefix=
 
+      - name: Fail if no tags were generated
+        run: |
+          [ -n "${{ steps.meta.outputs.tags }}" ] || { echo "::error::no tags generated"; exit 1; }
+
       - name: Build and push Docker image
         id: push
         uses: docker/build-push-action@v7
@@ -37,10 +41,5 @@ jobs:
           context: . # Defines the build's context as the set of files located in the specified path
           file: ./Dockerfile
           push: true
-          tags: ${{ secrets.DOCKER_USERNAME }}/polyvault:${{ steps.meta.outputs.tag }} # hermeserm/polyvault:${{ steps.meta.outputs.tags }}
-
+          tags: ${{ secrets.DOCKER_USERNAME }}/polyvault:${{ steps.meta.outputs.tags }} # hermeserm/polyvault:${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
-
-      - name: Fail if no tags were generated
-        run: |
-          [ -n "${{ steps.meta.outputs.tags }}" ] || { echo "::error::no tags generated"; exit 1; }
