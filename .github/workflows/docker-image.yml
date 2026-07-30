@@ -43,5 +43,5 @@ jobs:
           context: . # Defines the build's context as the set of files located in the specified path
           file: ./Dockerfile
           push: true
-          tags: hermeserm/polyvault:${{ steps.vars.outputs.sha_short }}
+          tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
