@@ -30,6 +30,12 @@ jobs:
           images: hermeserm/polyvault
           tags: type=sha,prefix=
 
+        #
+      - name: Calculate Short SHA
+        id: vars
+        run: echo "sha_short=$(echo ${{ github.sha }} | cut -c1-7)" >> $GITHUB_OUTPUT
+        #
+
       - name: Build and push Docker image
         id: push
         uses: docker/build-push-action@v7
@@ -37,9 +43,5 @@ jobs:
           context: . # Defines the build's context as the set of files located in the specified path
           file: ./Dockerfile
           push: true
-          tags: hermeserm/polyvault:latest
+          tags: hermeserm/polyvault:${{ steps.vars.outputs.sha_short }}
           labels: ${{ steps.meta.outputs.labels }}
-
-      - name: Fail if no tags were generated
-        run: |
-          [ -n "${{ steps.meta.outputs.tags }}" ] || { echo "::error::no tags generated"; exit 1; }
