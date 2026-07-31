@@ -1,5 +1,5 @@
-const HOST = "localhost";
-const PORT = 8000;
+const HOST = "34.229.76.46";
+const PORT = 80;
 const API = `http://${HOST}:${PORT}}`;
 
 const $ = (id) => document.getElementById(id);
