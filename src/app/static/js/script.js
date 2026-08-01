@@ -1,6 +1,7 @@
-const HOST = "34.229.76.46";
+const HOST = "44.200.40.74";
 const PORT = 80;
-const API = `http://${HOST}:${PORT}}`;
+// const API = `http://${HOST}:${PORT}`;
+const API = ""; // Relative Path
 
 const $ = (id) => document.getElementById(id);
 const table = $("table");
