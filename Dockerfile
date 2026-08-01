@@ -22,4 +22,4 @@ COPY . .
 
 WORKDIR /app/src/app
 
-CMD ["fastapi", "run", "main.py"]
+CMD ["fastapi", "run", "main.py", "--port", "80"]
