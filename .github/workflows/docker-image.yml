@@ -6,6 +6,14 @@ on:
   # pull_request:
   #   branches: ["main"]
 
+env:
+  ECS_CLUSTER: ligo-cluster-1
+  ECS_SERVICE: ligo-rag-service
+  CONTAINER_NAME: rag-server
+  TASK_DEFINITION_FAMILY: ligo-rag-task
+  AWS_REGISTRY_URL: null
+  REPOSITORY_NAME: ligo/poly-vault
+
 jobs:
   build-and-push:
     runs-on: ubuntu-latest
@@ -34,7 +42,7 @@ jobs:
         id: ecr
         uses: aws-actions/amazon-ecr-login@v2
 
-      - name: Extract metadata (tags, labels) for Docker
+      - name: Extract metadata (tags, labels) for Docker image
         id: meta
         uses: docker/metadata-action@v6
         with:
@@ -50,3 +58,36 @@ jobs:
           push: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
+
+      - name: Download current task definition
+        run: |
+          aws ecs describe-task-definition \
+            --task-definition ${{ env.TASK_DEFINITION_FAMILY }} \
+            --query 'taskDefinition' > task-definition.json
+
+        # Removes metadata so it can be reused for the new deployment.
+      - name: Clean task definition
+        run: |
+          jq 'del(.taskDefinitionArn, .revision, .status, .requiresAttributes, .compatibilities, .registeredAt, .deregisteredAt, .registeredBy, .enableFaultInjection)' task-definition.json > cleaned-task-definition.json
+          mv cleaned-task-definition.json task-definition.json
+
+        # This plugs the new image into the existing task definition, ready for ECS.
+      - name: Render updated task definition
+        id: render-task-def
+        uses: aws-actions/amazon-ecs-render-task-definition@v1
+        with:
+          task-definition: task-definition.json
+          container-name: ${{ env.CONTAINER_NAME }}
+          image: ${{ steps.meta.outputs.tags }}
+          environment-variables: |
+            AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_KEY_ID }}
+            AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY }}
+            AWS_REGION=${{ secrets.AWS_REGION }}
+
+      - name: Deploy to ECS service
+        uses: aws-actions/amazon-ecs-deploy-task-definition@v2
+        with:
+          task-definition: ${{ steps.render-task-def.outputs.task-definition }}
+          service: ${{ env.ECS_SERVICE }}
+          cluster: ${{ env.ECS_CLUSTER }}
+          wait-for-service-stability: true
