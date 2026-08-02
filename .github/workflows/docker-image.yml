@@ -9,7 +9,7 @@ on:
 env:
   ECS_CLUSTER: ligo-cluster-1
   ECS_SERVICE: ligo-rag-service
-  CONTAINER_NAME: rag-server
+  CONTAINER_NAME: Main
   TASK_DEFINITION_FAMILY: ligo-rag-task
   AWS_REGISTRY_URL: null
   REPOSITORY_NAME: ligo/poly-vault
