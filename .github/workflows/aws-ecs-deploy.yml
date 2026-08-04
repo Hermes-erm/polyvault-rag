@@ -71,7 +71,7 @@ jobs:
           jq 'del(.taskDefinitionArn, .revision, .status, .requiresAttributes, .compatibilities, .registeredAt, .deregisteredAt, .registeredBy, .enableFaultInjection)' task-definition.json > cleaned-task-definition.json
           mv cleaned-task-definition.json task-definition.json
 
-        # This plugs the new image into the existing task definition, ready for ECS.
+        # This plugs the new image into the existing task definition, ready for ECS. (This is purely local file editing)
       - name: Render updated task definition
         id: render-task-def
         uses: aws-actions/amazon-ecs-render-task-definition@v1
