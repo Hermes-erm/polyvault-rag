@@ -10,7 +10,7 @@
   --amber: #cba24f;
   --red: #c56060;
   --mono: ui-monospace, "JetBrains Mono", "SF Mono", Menlo, Consolas, monospace;
-  --r: 10px;
+  --r: 6px;
 }
 
 * {
@@ -47,12 +47,29 @@ button {
 }
 
 .wrap {
-  max-width: 1600px;
-  margin: 0 auto;
-  padding: 28px clamp(16px, 3vw, 40px);
+  width: 100%;
+  padding: 40px clamp(20px, 3vw, 56px);
+}
+.topbar {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 24px;
+}
+.topbar h1 {
+  font-size: 16px;
+  letter-spacing: 0.02em;
+}
+.stat {
+  font-size: 11px;
+  color: var(--dim);
+}
+
+.layout {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) clamp(320px, 28vw, 460px);
-  gap: 24px;
+  grid-template-columns: minmax(0, 1.5fr) minmax(360px, 1fr);
+  gap: 28px;
   align-items: start;
 }
 
@@ -80,35 +97,41 @@ button {
   color: var(--text);
 }
 
-/* header */
-.bar {
+/* right column: two equal card halves */
+.panel {
   display: flex;
-  align-items: baseline;
-  justify-content: space-between;
-  gap: 12px;
-  margin-bottom: 18px;
+  flex-direction: column;
+  gap: 20px;
+  height: min(74dvh, 720px);
 }
-.bar h1 {
-  font-size: 15px;
-  letter-spacing: 0.02em;
-}
-.stat {
-  font-size: 11px;
-  color: var(--dim);
-}
-
-/* upload */
-.drop {
-  width: 100%;
-  display: flex;
-  align-items: center;
-  gap: 14px;
-  text-align: left;
+.card {
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: var(--r);
-  padding: 16px 18px;
-  margin-bottom: 26px;
+  overflow: hidden;
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+/* upload */
+.upload-card {
+  flex: 0 0 200px;
+  padding: 12px;
+}
+.drop {
+  flex: 1;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  text-align: center;
+  padding: 20px;
+  border: 1px dashed var(--border);
+  border-radius: calc(var(--r) - 2px);
   transition:
     border-color 0.15s,
     background 0.15s;
@@ -121,11 +144,9 @@ button {
 .drop svg {
   width: 20px;
   height: 20px;
-  flex: none;
   color: var(--dim);
 }
 .drop b {
-  display: block;
   font-weight: 500;
 }
 .drop i {
@@ -135,18 +156,30 @@ button {
 }
 
 /* table */
+.docs-card {
+  flex: 1;
+}
+.docs-card .head--pad {
+  flex: none;
+}
 .table {
-  border: 1px solid var(--border);
-  border-radius: var(--r);
-  background: var(--surface);
-  overflow: hidden;
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+}
+.table::-webkit-scrollbar {
+  width: 8px;
+}
+.table::-webkit-scrollbar-thumb {
+  background: var(--border);
+  border-radius: 8px;
 }
 .row {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) 80px 90px 100px 30px;
+  grid-template-columns: minmax(0, 1fr) 42px 58px 74px 24px;
   align-items: center;
-  gap: 12px;
-  padding: 12px 16px;
+  gap: 8px;
+  padding: 10px 14px;
   border-top: 1px solid var(--border);
   font-size: 12.5px;
   color: var(--dim);
@@ -161,6 +194,10 @@ button {
   font-size: 11px;
   letter-spacing: 0.04em;
   color: var(--mute);
+  position: sticky;
+  top: 0;
+  background: var(--surface);
+  z-index: 1;
 }
 .row span:first-child {
   overflow: hidden;
@@ -169,11 +206,12 @@ button {
 }
 .badge {
   justify-self: start;
-  font-size: 11px;
-  padding: 3px 9px;
-  border-radius: 5px;
+  font-size: 10px;
+  padding: 3px 7px;
+  border-radius: 4px;
   color: var(--dim);
   background: var(--surface-2);
+  white-space: nowrap;
 }
 .badge--indexed {
   color: var(--green);
@@ -196,7 +234,7 @@ button {
   place-items: center;
   width: 26px;
   height: 26px;
-  border-radius: 6px;
+  border-radius: 4px;
   color: var(--mute);
   opacity: 0;
   transition:
@@ -210,17 +248,12 @@ button {
 }
 .row:hover .del,
 .del:focus-visible,
-.del--armed,
 .del:disabled {
   opacity: 1;
 }
 .del:hover {
   color: var(--red);
   background: rgba(197, 96, 96, 0.12);
-}
-.del--armed {
-  color: var(--red);
-  background: rgba(197, 96, 96, 0.18);
 }
 .del:disabled {
   color: var(--mute);
@@ -249,9 +282,7 @@ button {
 
 /* chat */
 .chat {
-  position: sticky;
-  top: 28px;
-  height: calc(100dvh - 56px);
+  height: min(74dvh, 720px);
   min-height: 420px;
   display: flex;
   flex-direction: column;
@@ -284,7 +315,7 @@ button {
 .msg--user {
   align-self: flex-end;
   background: var(--surface-2);
-  border-radius: 10px 10px 2px 10px;
+  border-radius: 8px 8px 2px 8px;
   padding: 8px 11px;
 }
 .msg--bot {
@@ -293,6 +324,42 @@ button {
 }
 .msg--error {
   color: var(--red);
+}
+.msg--bot p + p {
+  margin-top: 8px;
+}
+.msg--bot h1,
+.msg--bot h2,
+.msg--bot h3 {
+  color: var(--text);
+  font-size: 1em;
+  margin: 10px 0 4px;
+}
+.msg--bot ul {
+  margin: 6px 0 6px 18px;
+}
+.msg--bot code {
+  font: inherit;
+  color: var(--amber);
+  background: var(--surface-2);
+  padding: 1px 5px;
+  border-radius: 4px;
+}
+.msg--bot pre {
+  margin: 8px 0;
+  padding: 10px 12px;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  overflow-x: auto;
+}
+.msg--bot pre code {
+  padding: 0;
+  background: none;
+  color: var(--text);
+}
+.msg--bot a {
+  color: var(--green);
 }
 
 .dock {
@@ -310,7 +377,7 @@ button {
   color: var(--text);
   background: var(--bg);
   border: 1px solid var(--border);
-  border-radius: 8px;
+  border-radius: 6px;
   padding: 8px 10px;
   outline: none;
 }
@@ -326,7 +393,7 @@ button {
   height: 34px;
   display: grid;
   place-items: center;
-  border-radius: 8px;
+  border-radius: 6px;
   background: var(--green);
   color: var(--bg);
 }
@@ -349,17 +416,31 @@ button {
 }
 
 @media (max-width: 900px) {
-  .wrap {
+  .layout {
     grid-template-columns: 1fr;
   }
   .chat {
-    position: static;
-    height: 70dvh;
+    height: 60dvh;
+  }
+  .panel {
+    height: auto;
+  }
+  .upload-card {
+    flex: none;
+  }
+  .drop {
+    padding: 16px;
+  }
+  .docs-card {
+    flex: none;
+  }
+  .table {
+    max-height: 300px;
   }
 }
 @media (max-width: 520px) {
   .row {
-    grid-template-columns: minmax(0, 1fr) 90px 30px;
+    grid-template-columns: minmax(0, 1fr) 74px 24px;
   }
   .row > :nth-child(2),
   .row > :nth-child(3) {

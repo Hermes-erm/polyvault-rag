@@ -3,66 +3,68 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>ingest</title>
+    <title>poly-vault</title>
     <link rel="stylesheet" href="style.css" />
   </head>
   <body>
     <div class="wrap">
-      <main>
-        <header class="bar">
-          <h1>ingest</h1>
-          <span class="stat" id="stat">loading…</span>
-        </header>
+      <header class="topbar">
+        <h1>poly-vault</h1>
+        <span class="stat" id="stat">loading…</span>
+      </header>
 
-        <button class="drop" id="drop" type="button">
-          <svg viewBox="0 0 24 24" aria-hidden="true">
-            <path
-              d="M12 15V4m0 0L8 8m4-4 4 4M4 17v2a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-2"
-            />
-          </svg>
-          <span>
-            <b id="lead">Drop files or click to upload</b>
-            <i>txt, json, pdf, xlsx, image</i>
-          </span>
-        </button>
-        <input type="file" id="file" multiple hidden />
-
-        <section>
-          <div class="head">
-            <p class="label">documents</p>
-            <button class="ghost" id="refresh" type="button">refresh</button>
+      <div class="layout">
+        <main class="chat">
+          <div class="head head--pad">
+            <p class="label">query</p>
           </div>
-          <div class="table" id="table">
-            <div class="row row--head">
-              <span>name</span><span>chunks</span><span>size</span
-              ><span>status</span><span class="sr">actions</span>
+          <div class="stream" id="stream">
+            <p class="empty">Ask anything about your indexed documents.</p>
+          </div>
+          <form class="dock" id="form">
+            <textarea
+              id="input"
+              rows="1"
+              placeholder="ask your corpus…"
+              spellcheck="false"
+            ></textarea>
+            <button id="send" aria-label="Send" disabled>
+              <svg viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M4 12h14M13 7l5 5-5 5" />
+              </svg>
+            </button>
+          </form>
+        </main>
+
+        <aside class="panel">
+          <section class="card upload-card">
+            <button class="drop" id="drop" type="button">
+              <svg viewBox="0 0 24 24" aria-hidden="true">
+                <path
+                  d="M12 15V4m0 0L8 8m4-4 4 4M4 17v2a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-2"
+                />
+              </svg>
+              <b id="lead">Drop files or click to upload</b>
+              <i>txt, json, pdf, xlsx, image</i>
+            </button>
+            <input type="file" id="file" multiple hidden />
+          </section>
+
+          <section class="card docs-card">
+            <div class="head head--pad">
+              <p class="label">documents</p>
+              <button class="ghost" id="refresh" type="button">refresh</button>
             </div>
-            <div class="empty" id="tableMsg">loading…</div>
-          </div>
-        </section>
-      </main>
-
-      <aside class="chat">
-        <div class="head head--pad">
-          <p class="label">query</p>
-        </div>
-        <div class="stream" id="stream">
-          <p class="empty">Ask anything about your indexed documents.</p>
-        </div>
-        <form class="dock" id="form">
-          <textarea
-            id="input"
-            rows="1"
-            placeholder="ask your corpus…"
-            spellcheck="false"
-          ></textarea>
-          <button id="send" aria-label="Send" disabled>
-            <svg viewBox="0 0 24 24" aria-hidden="true">
-              <path d="M4 12h14M13 7l5 5-5 5" />
-            </svg>
-          </button>
-        </form>
-      </aside>
+            <div class="table" id="table">
+              <div class="row row--head">
+                <span>name</span><span>chunks</span><span>size</span
+                ><span>status</span><span class="sr">actions</span>
+              </div>
+              <div class="empty" id="tableMsg">loading…</div>
+            </div>
+          </section>
+        </aside>
+      </div>
     </div>
     <script src="./js/script.js"></script>
   </body>

@@ -1,4 +1,4 @@
-const HOST = "44.200.40.74";
+const HOST = "localhost";
 const PORT = 80;
 // const API = `http://${HOST}:${PORT}`;
 const API = ""; // Relative Path
@@ -58,19 +58,6 @@ function cell(text, className) {
 
 const TRASH = `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M9 7V5a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2M10 11v6M14 11v6M6 7l1 12a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1l1-12"/></svg>`;
 
-let armed = null;
-let armTimer = null;
-
-function disarm() {
-  clearTimeout(armTimer);
-  armed?.classList.remove("del--armed");
-  armed = null;
-}
-
-document.addEventListener("click", (e) => {
-  if (!e.target.closest(".del")) disarm();
-});
-
 function delButton(file) {
   const btn = document.createElement("button");
   const id = file.id ?? file.doc_id;
@@ -88,24 +75,7 @@ function delButton(file) {
 
   btn.title = `Delete ${name}`;
   btn.setAttribute("aria-label", `Delete ${name}`);
-
-  btn.addEventListener("click", () => {
-    // First click arms, second click deletes — no modal, no accidents.
-    if (armed !== btn) {
-      disarm();
-      armed = btn;
-      btn.classList.add("del--armed");
-      btn.title = `Click again to delete ${name}`;
-      armTimer = setTimeout(() => {
-        btn.title = `Delete ${name}`;
-        disarm();
-      }, 4000);
-      return;
-    }
-    disarm();
-    btn.title = `Delete ${name}`;
-    remove(id, name, btn);
-  });
+  btn.addEventListener("click", () => remove(id, name, btn));
 
   return btn;
 }
@@ -176,6 +146,43 @@ async function upload(list) {
   setTimeout(() => (lead.textContent = LEAD), 3000);
 }
 
+/* ---------- markdown ---------- */
+
+function md(text) {
+  const esc = (s) =>
+    s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+
+  let out = esc(text);
+
+  out = out.replace(
+    /```([\s\S]*?)```/g,
+    (_, code) => `<pre><code>${code.trim()}</code></pre>`,
+  );
+  out = out.replace(/`([^`]+)`/g, "<code>$1</code>");
+  out = out.replace(/^### (.*)$/gm, "<h3>$1</h3>");
+  out = out.replace(/^## (.*)$/gm, "<h2>$1</h2>");
+  out = out.replace(/^# (.*)$/gm, "<h1>$1</h1>");
+  out = out.replace(/\*\*(.+?)\*\*/g, "<b>$1</b>");
+  out = out.replace(/(?<!\*)\*([^*]+)\*(?!\*)/g, "<i>$1</i>");
+  out = out.replace(
+    /\[(.+?)\]\((.+?)\)/g,
+    '<a href="$2" target="_blank" rel="noopener">$1</a>',
+  );
+  out = out.replace(/^\s*[-*] (.*)$/gm, "<li>$1</li>");
+  out = out.replace(/(?:<li>.*<\/li>\n?)+/g, (block) => `<ul>${block}</ul>`);
+
+  out = out
+    .split(/\n{2,}/)
+    .map((block) =>
+      /^<(h\d|ul|pre)/.test(block.trim())
+        ? block
+        : `<p>${block.replace(/\n/g, "<br>")}</p>`,
+    )
+    .join("");
+
+  return out;
+}
+
 /* ---------- query ---------- */
 
 let busy = false;
@@ -211,7 +218,7 @@ async function ask(e) {
     const res = await call(
       `/query/search?query=${encodeURIComponent(question)}`,
     );
-    bot.textContent = res?.data ?? "No answer returned.";
+    bot.innerHTML = md(res?.data ?? "No answer returned.");
   } catch (err) {
     bot.textContent = `Retrieval failed — ${err.message}`;
     bot.classList.add("msg--error");
