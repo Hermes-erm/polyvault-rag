@@ -6,6 +6,31 @@ A multimodal RAG service that ingests documents, chunks them by meaning, stores 
 
 **Board link:** https://miro.com/app/board/uXjVH8rkfWQ=/?share_link_id=285379039612
 
+**Live:** http://3.213.56.253/
+
+## Architecture
+
+```mermaid
+flowchart TD
+    subgraph CICD["CI/CD — on push to main"]
+        direction TB
+        A[GitHub Actions] -->|push image| B[(Amazon ECR)]
+        A -->|deploy new task definition| C[ECS Service]
+    end
+
+    subgraph Runtime["Request path"]
+        D[Client] --> E["Elastic IP (static)"]
+        E --> F[Network Load Balancer]
+        F -->|health check passes| G[Target Group]
+        G <-->|register / route traffic| H[ECS Task]
+    end
+
+    C -->|launches| H
+    B -->|pulls image| H
+```
+
+Every push to `main` builds a new image, pushes it to ECR, and rolls a new ECS task out behind the target group. Clients always hit the same Elastic IP — the NLB only starts routing to a new task once it passes its health check, so the container churn underneath is invisible to callers.
+
 ## How it works
 
 ### Document ingestion
@@ -33,15 +58,18 @@ A multimodal RAG service that ingests documents, chunks them by meaning, stores 
 - Persistent ChromaDB storage
 - Document status tracking in SQLite
 - Minimal web UI for upload, listing, deletion, and querying
+- Automated build & deploy to AWS on every push to `main`
 
 ## Stack
 
-FastAPI · Docling · BlingFire · ChromaDB · MiniLM embeddings · Cohere reranker · Gemini · SQLAlchemy/SQLite
+FastAPI · Docling · BlingFire · ChromaDB · MiniLM embeddings · Cohere reranker · Gemini · SQLAlchemy/SQLite · GitHub Actions · Amazon ECR/ECS · NLB
 
 ## Project Structure
 
 ```text
 poly-vault/
+├── .github/workflows/
+│   └── aws-ecs-deploy.yml      # Build, push to ECR, deploy to ECS
 ├── rag_system/
 │   ├── document_processor.py   # Parse → split → chunk → store
 │   ├── retriever.py            # ChromaDB store, query, rerank
@@ -55,7 +83,7 @@ poly-vault/
 │   └── static/                 # index.html, style.css, js/script.js
 ├── pipeline/{staging,processed}/
 ├── chromadb/                   # Vector store
-├── pipeline.db                 # Document metadata
+├── pipeline.db                 # Document metadata store
 ├── docs/rag-architecture.jpg
 ├── Dockerfile
 └── .env
@@ -97,6 +125,17 @@ Open the UI at `http://127.0.0.1:8000/` and the API docs at:
 http://127.0.0.1:8000/docs
 ```
 
+## CI/CD & Deployment
+
+Every push to `main` triggers a GitHub Actions workflow (`.github/workflows/aws-ecs-deploy.yml`) that ships the image straight to AWS:
+
+1. **Build** — Docker Buildx builds the image from the repo `Dockerfile` and tags it with the commit SHA.
+2. **Push** — the image is logged in and pushed to Amazon ECR (`ligo/poly-vault`).
+3. **Render task definition** — the current ECS task definition (`ligo-rag-task`) is pulled, stripped of read-only fields (ARN, revision, status, etc.), and re-rendered with the new image for the `Main` container.
+4. **Deploy** — the updated task definition is registered and rolled out to the ECS service (`ligo-rag-service`) on cluster `ligo-cluster-1`; the workflow waits for the service to stabilize before finishing.
+
+See [Architecture](#architecture) above for how the NLB and Elastic IP keep the public address stable across deploys.
+
 ## API
 
 | Method | Endpoint                  | Description               |
@@ -129,3 +168,4 @@ curl "http://127.0.0.1:8000/query/search?query=What is the refund policy?"
 - The MiniLM tokenizer is fetched on first run (`local_files_only=False`); set it to `True` in `retriever.py` to run fully offline.
 - Deleting a document removes both its database row and its vectors.
 - `reset-vector` permanently clears the stored embeddings and the document table.
+- No auth is enforced on the API yet — the delete and reset-vector endpoints are callable by anyone who can reach the address.
